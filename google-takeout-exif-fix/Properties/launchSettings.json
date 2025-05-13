@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "google-takeout-exif-fix": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\Users\\Patryk\\Downloads\\Takeout_WinRar\\Takeout\\testData\" .jpeg"
+    }
+  }
+}
