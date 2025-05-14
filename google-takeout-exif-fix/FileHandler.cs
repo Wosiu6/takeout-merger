@@ -1,25 +1,38 @@
-﻿using System;
-using System.IO;
-
-namespace google_takeout_exif_fix
+﻿namespace google_takeout_exif_fix
 {
     public static class FileHandler
     {
-        public static List<string> GetFilesByExtensions(string directoryPath, List<string> extensions, SearchOption searchOption = SearchOption.AllDirectories)
+        public static List<string> GetFilesByExtensions(string directoryPath, List<string> extensions, SearchOption searchOption = SearchOption.AllDirectories, bool exclude = false)
         {
-            List<string> filesList = new List<string>();
-
-            if (extensions == null || !extensions.Any())
-            {
-                return filesList;
-            }
-
+            List<string> filesList = [];
             IEnumerable<string> allFiles = Directory.EnumerateFiles(directoryPath, "*.*", searchOption);
+
+            List<string> lowerCaseExtensions = extensions.Select(ext => ext.ToLowerInvariant()).ToList();
 
             foreach (string file in allFiles)
             {
                 string fileExtension = Path.GetExtension(file);
-                if (!string.IsNullOrEmpty(fileExtension) && extensions.Contains(fileExtension.ToLowerInvariant()))
+
+                if (!string.IsNullOrEmpty(fileExtension))
+                {
+                    bool containsExtension = lowerCaseExtensions.Contains(fileExtension.ToLowerInvariant());
+
+                    if (exclude)
+                    {
+                        if (!containsExtension)
+                        {
+                            filesList.Add(file);
+                        }
+                    }
+                    else
+                    {
+                        if (containsExtension)
+                        {
+                            filesList.Add(file);
+                        }
+                    }
+                }
+                else if (exclude)
                 {
                     filesList.Add(file);
                 }
@@ -27,9 +40,9 @@ namespace google_takeout_exif_fix
             return filesList;
         }
 
-        public static Dictionary<string, string> MatchFilesWithJsonsFuzzy(string directoryPath, List<string> foundFiles)
+        public static Dictionary<string, string>? MatchFilesWithJsonsFuzzy(string directoryPath, List<string> foundFiles)
         {
-            Dictionary<string, string> fileJsonMap = new Dictionary<string, string>();
+            Dictionary<string, string> fileJsonMap = [];
 
             List<string> potentialJsonFiles = Directory.EnumerateFiles(directoryPath, "*.json", SearchOption.AllDirectories).ToList();
 
@@ -38,9 +51,13 @@ namespace google_takeout_exif_fix
                 return null;
             }
 
+            int progress = 0;
+
             foreach (string foundFile in foundFiles)
             {
                 // Try StartsWith
+                progress++;
+
                 var match = potentialJsonFiles.Where(x => x.StartsWith(foundFile)).FirstOrDefault();
 
                 if (match != null)
@@ -50,7 +67,7 @@ namespace google_takeout_exif_fix
                 }
 
                 // Try Levenshtein
-                string closestMatch = null;
+                string? closestMatch = null;
                 int minDistance = int.MaxValue;
 
                 foreach (string jsonFile in potentialJsonFiles)
@@ -68,6 +85,8 @@ namespace google_takeout_exif_fix
                 {
                     fileJsonMap[foundFile] = closestMatch;
                 }
+
+                Console.WriteLine("Progress: " + progress + "/" + foundFiles.Count);
             }
 
             return fileJsonMap;

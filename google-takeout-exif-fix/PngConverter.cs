@@ -28,7 +28,7 @@ namespace google_takeout_exif_fix
 
             var myEncoderParameter = new EncoderParameter(myEncoder, 100L);
             myEncoderParameters.Param[0] = myEncoderParameter;
-            var newName = $"{getBaseDir}\\{nameWithNoExtension}_JPEG.jpeg";
+            var newName = $"{getBaseDir}\\{nameWithNoExtension}.png.jpeg";
             bmp1.Save(newName, jgepEncoder, myEncoderParameters);
         }
 
