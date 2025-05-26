@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.13.35931.197
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "google-takeout-exif-fix", "google-takeout-exif-fix\google-takeout-exif-fix.csproj", "{7AB8ED58-8FA0-4DBB-8CC5-5A347203D5C5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "takeout_merger_p", "google-takeout-exif-fix\takeout_merger_p.csproj", "{7AB8ED58-8FA0-4DBB-8CC5-5A347203D5C5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,9 +1,11 @@
-﻿namespace google_takeout_exif_fix
+﻿namespace takeout_merger_p
 {
     public static class FileHandler
     {
         public static List<string> GetFilesByExtensions(string directoryPath, List<string> extensions, SearchOption searchOption = SearchOption.AllDirectories, bool exclude = false)
         {
+            Console.WriteLine($"Searching in: {directoryPath}");
+
             List<string> filesList = [];
             IEnumerable<string> allFiles = Directory.EnumerateFiles(directoryPath, "*.*", searchOption);
 
@@ -37,11 +39,15 @@
                     filesList.Add(file);
                 }
             }
+
+            Console.WriteLine($"Found {filesList.Count} files by {string.Join(",", extensions)}");
             return filesList;
         }
 
         public static Dictionary<string, string>? MatchFilesWithJsonsFuzzy(string directoryPath, List<string> foundFiles)
         {
+            Console.WriteLine($"Matching files with JSONs in: {directoryPath}");
+
             Dictionary<string, string> fileJsonMap = [];
 
             List<string> potentialJsonFiles = Directory.EnumerateFiles(directoryPath, "*.json", SearchOption.AllDirectories).ToList();
@@ -55,8 +61,8 @@
 
             foreach (string foundFile in foundFiles)
             {
-                // Try StartsWith
-                progress++;
+                Console.WriteLine("Progress {0}/{1}: {2}",
+                    ++progress, foundFiles.Count, foundFile);
 
                 var match = potentialJsonFiles.Where(x => x.StartsWith(foundFile)).FirstOrDefault();
 
@@ -85,10 +91,9 @@
                 {
                     fileJsonMap[foundFile] = closestMatch;
                 }
-
-                Console.WriteLine("Progress: " + progress + "/" + foundFiles.Count);
             }
 
+            Console.WriteLine($"Matched {fileJsonMap.Count} files in {directoryPath}");
             return fileJsonMap;
         }
 

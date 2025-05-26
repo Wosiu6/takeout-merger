@@ -1,5 +1,5 @@
-﻿using google_takeout_exif_fix;
-using google_takeout_exif_fix.EXIFDataWriters;
+﻿using takeout_merger_p;
+using takeout_merger_p.EXIFDataWriters;
 
 if (args.Length < 1)
 {
@@ -11,37 +11,48 @@ if (args.Length < 1)
 string directoryPath = args[0];
 string outputPath = args[1];
 
-if (!Directory.Exists(directoryPath))
-{
-    Console.WriteLine($"Error: Directory not found at '{directoryPath}'");
-    return;
-}
+ValidateUserInput();
+SetupHandlers();
 
-Console.WriteLine($"Searching in: {directoryPath}");
 
-List<string> foundPngs = FileHandler.GetFilesByExtensions(directoryPath, [ ".png" ]);
-Console.WriteLine($"Found {foundPngs.Count} pngs to duplicate");
+List<string> foundPngs = FileHandler.GetFilesByExtensions(directoryPath, [".png"]);
+
+var pngTakeoutPairs = FileHandler.MatchFilesWithJsonsFuzzy(directoryPath, foundPngs);
 
 foreach (var pngsFile in foundPngs)
 {
     PngConverter.ConvertPngToJpeg(pngsFile);
 }
 
-List<string> foundFiles = FileHandler.GetFilesByExtensions(directoryPath, [".json"], exclude: true);
+return;
 
-Console.WriteLine($"Found {foundFiles.Count} files to fix");
+//List<string> foundFiles = FileHandler.GetFilesByExtensions(directoryPath, [".json", ".png"], exclude: true);
+List<string> foundFiles = FileHandler.GetFilesByExtensions(directoryPath, [".json", ".png"], exclude: true);
 
-var jpgJsonPairs = FileHandler.MatchFilesWithJsonsFuzzy(directoryPath, foundFiles);
+var takoutPairs = FileHandler.MatchFilesWithJsonsFuzzy(directoryPath, foundFiles);
 
-if (jpgJsonPairs == null)
+TakeoutDuplicator.DuplicatePairs(takoutPairs);
+
+await ExifImageWriter.WriteImageMetadata(takoutPairs);
+
+void ValidateUserInput()
 {
-    Console.WriteLine("No JSON files found to match with JPEGs.");
-    return;
+    if (!Directory.Exists(directoryPath))
+    {
+        Console.WriteLine($"Error: Directory not found at '{directoryPath}'");
+        return;
+    }
+
+    if (!Directory.Exists(outputPath))
+    {
+        Console.WriteLine($"Output directory not found at '{outputPath}'. Creating it now.");
+        Directory.CreateDirectory(outputPath);
+    }
 }
 
-ExifImageWriter.OutputPath = outputPath;
-
-foreach (var jpgJsonPair in jpgJsonPairs)
+void SetupHandlers()
 {
-    ExifImageWriter.WriteImageMetadata(jpgJsonPair.Value, jpgJsonPair.Key);
+    TakeoutDuplicator.OutputPath = outputPath;
+    PngConverter.OutputPath = outputPath;
+    ExifImageWriter.OutputPath = outputPath;
 }

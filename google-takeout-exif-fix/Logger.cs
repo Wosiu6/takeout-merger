@@ -1,4 +1,4 @@
-﻿namespace google_takeout_exif_fix
+﻿namespace takeout_merger_p
 {
     public class Logger
     {

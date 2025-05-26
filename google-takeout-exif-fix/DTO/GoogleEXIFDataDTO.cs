@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace google_takeout_exif_fix.DTO
+namespace takeout_merger_p.DTO
 {
     public class CreationTime
     {
