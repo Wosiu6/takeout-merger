@@ -2,7 +2,7 @@
   "profiles": {
     "google-takeout-exif-fix": {
       "commandName": "Project",
-      "commandLineArgs": "\"C:\\Users\\Patryk\\Downloads\\TakeoutTest\" \"C:\\Users\\Patryk\\Downloads\\TakeoutTest\\Output\""
+      "commandLineArgs": "\"C:\\Workspace\\Takeout\" \"C:\\Workspace\\Out\""
     }
   }
 }

@@ -1,5 +1,5 @@
 ﻿using takeout_merger_p;
-using takeout_merger_p.EXIFDataWriters;
+using System.Collections.Concurrent;
 
 if (args.Length < 1)
 {
@@ -10,30 +10,66 @@ if (args.Length < 1)
 
 string directoryPath = args[0];
 string outputPath = args[1];
+int currentProgress = 0;
 
 ValidateUserInput();
 SetupHandlers();
 
+List<string> foundTagTypesPaths = FileHandler.GetFilesByExtensions(directoryPath, [".tiff", ".jpg", ".jpeg"]);
+List<string> foundPngPaths = FileHandler.GetFilesByExtensions(directoryPath, [".png"]);
+List<string> foundVideos = FileHandler.GetFilesByExtensions(directoryPath, [".mp4", ".mkv", ".mov", ".avi", ".gif", ".mpeg"]);
 
-List<string> foundPngs = FileHandler.GetFilesByExtensions(directoryPath, [".png"]);
 
-var pngTakeoutPairs = FileHandler.MatchFilesWithJsonsFuzzy(directoryPath, foundPngs);
+// PNGS
+Dictionary<string, string>? pngTakeoutPairs = FileHandler.MatchFilesWithJsonsFuzzy(directoryPath, foundPngPaths);
+ConcurrentDictionary<string, string> concurrentFizzyPng = new(pngTakeoutPairs);
 
-foreach (var pngsFile in foundPngs)
+foreach (var pngTakeoutPair in pngTakeoutPairs)
 {
-    PngConverter.ConvertPngToJpeg(pngsFile);
+
+    var newPath = PngToTiffConverter.Convert(pngTakeoutPair.Key, CompressionMode.None);
+
+    var newNameNoExtension = Path.GetFileNameWithoutExtension(newPath);
+
+    ImageMetaHandler.ApplyJsonDataToImage(newPath, pngTakeoutPair.Value);
+
+    Console.WriteLine("Applying Json to PNGs {0}/{1}: {2}",
+                    ++currentProgress, pngTakeoutPairs.Count, pngTakeoutPair.Key);
 }
 
-return;
+// JPGs/JPEGs/TIFFs
+Dictionary<string, string>? foundTagTypesTakeoutPairs = FileHandler.MatchFilesWithJsonsFuzzy(directoryPath, foundTagTypesPaths);
+currentProgress = 0;
 
-//List<string> foundFiles = FileHandler.GetFilesByExtensions(directoryPath, [".json", ".png"], exclude: true);
-List<string> foundFiles = FileHandler.GetFilesByExtensions(directoryPath, [".json", ".png"], exclude: true);
+foreach (var foundTagTypesTakeoutPair in foundTagTypesTakeoutPairs)
+{
+    var fileNameNoExt = Path.GetFileNameWithoutExtension(foundTagTypesTakeoutPair.Key);
+    var fileExtension = Path.GetExtension(foundTagTypesTakeoutPair.Key);
 
-var takoutPairs = FileHandler.MatchFilesWithJsonsFuzzy(directoryPath, foundFiles);
+    var newPath = FileHandler.GetUniqueFileName($"{outputPath}\\{fileNameNoExt}{fileExtension}");
+    File.Copy(foundTagTypesTakeoutPair.Key, newPath);
 
-TakeoutDuplicator.DuplicatePairs(takoutPairs);
+    ImageMetaHandler.ApplyJsonDataToTagImage(newPath, foundTagTypesTakeoutPair.Value);
 
-await ExifImageWriter.WriteImageMetadata(takoutPairs);
+    Console.WriteLine("Applying Json to Tags {0}/{1}: {2}",
+                    ++currentProgress, foundTagTypesTakeoutPairs.Count, foundTagTypesTakeoutPair.Key);
+}
+
+// MP4s/MKVs/AVIs
+currentProgress = 0;
+
+foreach (var foundVideo in foundVideos)
+{
+    var fileNameNoExt = Path.GetFileNameWithoutExtension(foundVideo);
+    var fileExtension = Path.GetExtension(foundVideo);
+
+    var newPath = FileHandler.GetUniqueFileName($"{outputPath}\\{fileNameNoExt}{fileExtension}");
+
+    File.Copy(foundVideo, newPath);
+
+    Console.WriteLine("Copying movies {0}/{1}: {2}",
+                    ++currentProgress, foundVideos.Count, foundVideo);
+}
 
 void ValidateUserInput()
 {
@@ -53,6 +89,6 @@ void ValidateUserInput()
 void SetupHandlers()
 {
     TakeoutDuplicator.OutputPath = outputPath;
-    PngConverter.OutputPath = outputPath;
-    ExifImageWriter.OutputPath = outputPath;
+    PngToTiffConverter.OutputPath = outputPath;
+    ImageMetaHandler.OutputPath = outputPath;
 }

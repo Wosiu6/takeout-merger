@@ -64,6 +64,8 @@
                 Console.WriteLine("Progress {0}/{1}: {2}",
                     ++progress, foundFiles.Count, foundFile);
 
+
+                // try starts with
                 var match = potentialJsonFiles.Where(x => x.StartsWith(foundFile)).FirstOrDefault();
 
                 if (match != null)
@@ -97,7 +99,7 @@
             return fileJsonMap;
         }
 
-        public static int CalcLevenshteinDistance(string a, string b)
+        private static int CalcLevenshteinDistance(string a, string b)
         {
             if (string.IsNullOrEmpty(a) && string.IsNullOrEmpty(b))
             {
@@ -135,6 +137,29 @@
             }
 
             return distances[lengthA, lengthB];
+        }
+
+        public static string GetUniqueFileName(string filePath, int counter = 0)
+        {
+            string newFilePath = counter == 0 ? filePath : GenerateNumberedFileName(filePath, counter);
+
+            if (!File.Exists(newFilePath))
+            {
+                return newFilePath;
+            }
+
+            return GetUniqueFileName(filePath, counter + 1);
+        }
+
+        private static string GenerateNumberedFileName(string originalPath, int number)
+        {
+            string directory = Path.GetDirectoryName(originalPath) ?? "";
+            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(originalPath);
+            string extension = Path.GetExtension(originalPath);
+
+            string numberedFileName = $"{fileNameWithoutExtension}_{number}{extension}";
+
+            return Path.Combine(directory, numberedFileName);
         }
     }
 }

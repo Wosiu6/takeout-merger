@@ -1,29 +1,80 @@
 ﻿using System.Drawing;
 using System.Drawing.Imaging;
 using System.Text;
+using takeout_merger_p.DTO;
 
 namespace takeout_merger_p
 {
     public static class ImageMetaExtensions
     {
-        public static void SetMaxAperture(this Image image, uint numerator, uint denominator)
+        private const string _dateTimeFormat = "yyyy:MM:dd hh:mm:ss";
+
+        public static void SetTitle(this Image image, string text)
         {
-            SetMetaDataItem(image, MAX_APERTURE, (short)TagTypes.RATIONAL, GetPairUnsigned32Integer(numerator, denominator));
+            SetMetaDataItem(image, ExifTag.IMAGE_DESCRIPTION, (short)TagTypes.ASCII, GetNullTerminatedString(text));
         }
 
-        public static void SetExposureTime(this Image image, uint numerator, uint denominator)
+        public static void SetDescription(this Image image, string text)
         {
-            SetMetaDataItem(image, EXPOSURE_TIME, (short)TagTypes.RATIONAL, GetPairUnsigned32Integer(numerator, denominator));
+            SetMetaDataItem(image, ExifTag.USER_COMMENT, (short)TagTypes.ASCII, GetNullTerminatedString(text));
         }
 
-        public static void SetUserComment(this Image image, string text)
+        public static void SetAuthor(this Image image, string text)
         {
-            SetMetaDataItem(image, USER_COMMENT, (short)TagTypes.ASCII, GetNullTerminatedString(text));
+            SetMetaDataItem(image, ExifTag.ARTIST, (short)TagTypes.ASCII, GetNullTerminatedString(text));
         }
 
-        public static void Set35mmFocalLength(this Image image, short focalLength)
+        public static void SetCreationTime(this Image image, DateTime dateTime)
         {
-            SetMetaDataItem(image, FOCALLENGTH_35MM, (short)TagTypes.SHORT, BitConverter.GetBytes(focalLength));
+            var dateTimeToSave = dateTime.ToString(_dateTimeFormat);
+            var seconds = dateTime.Second.ToString();
+
+            SetMetaDataItem(image, ExifTag.DATE_TIME, (short)TagTypes.ASCII, GetNullTerminatedString(dateTimeToSave));
+            SetMetaDataItem(image, ExifTag.DATE_TIME_DIGITIZED, (short)TagTypes.ASCII, GetNullTerminatedString(dateTimeToSave));
+
+            SetMetaDataItem(image, ExifTag.SUB_SEC_TIME, (short)TagTypes.ASCII, GetNullTerminatedString(seconds));
+            SetMetaDataItem(image, ExifTag.SUB_SEC_TIME_DIGITIZED, (short)TagTypes.ASCII, GetNullTerminatedString(seconds));
+        }
+
+        public static void SetDateTimeOriginal(this Image image, DateTime dateTimeOriginal)
+        {
+            var dateTimeToSave = dateTimeOriginal.ToString(_dateTimeFormat);
+            var seconds = dateTimeOriginal.Second.ToString();
+
+            SetMetaDataItem(image, ExifTag.DATE_TIME_ORIGINAL, (short)TagTypes.ASCII, GetNullTerminatedString(dateTimeToSave));
+            SetMetaDataItem(image, ExifTag.PREVIEW_DATE_TIME, (short)TagTypes.ASCII, GetNullTerminatedString(dateTimeToSave));
+            SetMetaDataItem(image, ExifTag.THUMBNAIL_DATE_TIME, (short)TagTypes.ASCII, GetNullTerminatedString(dateTimeToSave));
+
+            SetMetaDataItem(image, ExifTag.SUB_SEC_TIME_ORIGINAL, (short)TagTypes.ASCII, GetNullTerminatedString(seconds));
+        }
+
+        public static void SetLatitude(this Image image, double latitude)
+        {
+            SetMetaDataItem(image, ExifTag.GPS_LATITUDE, (short)TagTypes.RATIONAL, GetPairUnsigned32Integer(latitude));
+        }
+
+        public static void SetLongitude(this Image image, double longitude)
+        {
+            SetMetaDataItem(image, ExifTag.GPS_LONGITUDE, (short)TagTypes.RATIONAL, GetPairUnsigned32Integer(longitude));
+        }
+
+        public static void SetAltitude(this Image image, double altitude)
+        {
+            SetMetaDataItem(image, ExifTag.GPS_LONGITUDE, (short)TagTypes.RATIONAL, GetPairUnsigned32Integer(altitude));
+        }
+
+        public static double GetMetaDataDouble(this Image image, int id)
+        {
+            PropertyItem? propertyItem = image.PropertyItems.FirstOrDefault(i => i.Id == id);
+
+            return propertyItem == null ? 0 : BitConverter.ToDouble(propertyItem.Value);
+        }
+
+        public static string GetMetaDataString(this Image image, int id)
+        {
+            PropertyItem? propertyItem = image.PropertyItems.FirstOrDefault(i => i.Id == id);
+
+            return propertyItem == null ? string.Empty : BitConverter.ToString(propertyItem.Value); 
         }
 
         public enum TagTypes : short
@@ -48,19 +99,14 @@ namespace takeout_merger_p
             image.SetPropertyItem(anyItem);
         }
 
-        private static byte[] GetPairUnsigned32Integer(uint numerator, uint denominator)
+        private static byte[] GetPairUnsigned32Integer(double number)
         {
-            return BitConverter.GetBytes(numerator).Concat(BitConverter.GetBytes(denominator)).ToArray();
+            return BitConverter.GetBytes(number).ToArray();
         }
 
         private static byte[] GetNullTerminatedString(string text)
         {
             return Encoding.ASCII.GetBytes(text + "\0");
         }
-
-        private const int EXPOSURE_TIME = 0x829A;
-        private const int USER_COMMENT = 0x9286;
-        private const int MAX_APERTURE = 0x9205;
-        private const int FOCALLENGTH_35MM = 0xA405;
     }
 }
