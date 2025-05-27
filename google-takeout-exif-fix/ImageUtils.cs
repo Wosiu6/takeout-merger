@@ -21,6 +21,42 @@ namespace takeout_merger_p
 
             return newName;
         }
+
+        public static string SaveAsUncompressedExtension(this Image image, string imagePath, string outputPath)
+        {
+            var encoderParams = new EncoderParameters(1);
+            encoderParams.Param[0] = new EncoderParameter(Encoder.Compression, (long)EncoderValue.CompressionNone);
+
+            var extension = Path.GetExtension(imagePath);
+
+            var codec = GetEncoder(GetMimeType(extension));
+            if (codec == null)
+                throw new NotSupportedException("TIFF encoder not available");
+
+
+            var nameWithNoExtension = Path.GetFileNameWithoutExtension(imagePath);
+            var newName = FileHandler.GetUniqueFileName($"{outputPath}\\{nameWithNoExtension}{extension}");
+
+            image.Save(newName, codec, encoderParams);
+
+            return newName;
+        }
+
+        private static string GetMimeType(string extension)
+        {
+            switch (extension.ToLowerInvariant())
+            {
+                case ".jpg":
+                case ".jpeg":
+                    return "image/jpeg";
+                case ".tiff":
+                case ".tif":
+                    return "image/tiff";
+                default:
+                    throw new NotSupportedException($"Unsupported image format: {extension}");
+            }
+        }
+
         public static ImageCodecInfo GetEncoder(string mimeType)
         {
             var codecs = ImageCodecInfo.GetImageEncoders();

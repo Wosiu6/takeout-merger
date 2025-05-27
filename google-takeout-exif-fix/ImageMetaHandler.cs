@@ -63,7 +63,7 @@ namespace takeout_merger_p
                 ApplyDescriptiveData(image, metadata);
                 ApplyTimeData(image, metadata);
 
-                image.Save(newName);
+                image.SaveAsUncompressedExtension(newName, OutputPath);
             }
 
             ApplyFileData(newName, metadata);
@@ -145,7 +145,7 @@ namespace takeout_merger_p
         {
             if (string.IsNullOrEmpty(image.GetMetaDataString(ExifTag.IMAGE_DESCRIPTION)))
             {
-                image.SetTitle(metadata.Title + "works");
+                image.SetTitle(metadata.Title);
             }
 
             if (string.IsNullOrEmpty(image.GetMetaDataString(ExifTag.USER_COMMENT)))

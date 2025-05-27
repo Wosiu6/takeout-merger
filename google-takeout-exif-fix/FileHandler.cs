@@ -61,7 +61,7 @@
 
             foreach (string foundFile in foundFiles)
             {
-                Console.WriteLine("Progress {0}/{1}: {2}",
+                Console.WriteLine("Matching JSON: {0}/{1}: {2}",
                     ++progress, foundFiles.Count, foundFile);
 
 

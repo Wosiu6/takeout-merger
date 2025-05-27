@@ -17,7 +17,7 @@ SetupHandlers();
 
 List<string> foundTagTypesPaths = FileHandler.GetFilesByExtensions(directoryPath, [".tiff", ".jpg", ".jpeg"]);
 List<string> foundPngPaths = FileHandler.GetFilesByExtensions(directoryPath, [".png"]);
-List<string> foundVideos = FileHandler.GetFilesByExtensions(directoryPath, [".mp4", ".mkv", ".mov", ".avi", ".gif", ".mpeg"]);
+List<string> foundVideos = FileHandler.GetFilesByExtensions(directoryPath, [".mp4", ".mkv", ".mov", ".avi", ".gif", ".mpeg", ".dng"]);
 
 
 // PNGS

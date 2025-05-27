@@ -7,7 +7,7 @@ namespace takeout_merger_p
 {
     public static class ImageMetaExtensions
     {
-        private const string _dateTimeFormat = "yyyy:MM:dd hh:mm:ss";
+        private const string _dateTimeFormat = "yyyy:MM:dd HH:mm:ss";
 
         public static void SetTitle(this Image image, string text)
         {
