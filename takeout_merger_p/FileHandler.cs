@@ -13,28 +13,21 @@
 
             foreach (string file in allFiles)
             {
-                string fileExtension = Path.GetExtension(file);
+                string? fileExtension = Path.GetExtension(file)?.ToLowerInvariant();
 
-                if (!string.IsNullOrEmpty(fileExtension))
+                bool shouldAddFile;
+
+                if (string.IsNullOrEmpty(fileExtension))
                 {
-                    bool containsExtension = lowerCaseExtensions.Contains(fileExtension.ToLowerInvariant());
-
-                    if (exclude)
-                    {
-                        if (!containsExtension)
-                        {
-                            filesList.Add(file);
-                        }
-                    }
-                    else
-                    {
-                        if (containsExtension)
-                        {
-                            filesList.Add(file);
-                        }
-                    }
+                    shouldAddFile = exclude;
                 }
-                else if (exclude)
+                else
+                {
+                    bool containsExtension = lowerCaseExtensions.Contains(fileExtension);
+                    shouldAddFile = (exclude == !containsExtension);
+                }
+
+                if (shouldAddFile)
                 {
                     filesList.Add(file);
                 }
@@ -49,8 +42,10 @@
             Console.WriteLine($"Matching files with JSONs in: {directoryPath}");
 
             Dictionary<string, string> fileJsonMap = [];
+            HashSet<string> usedJsonFiles = new();
 
             List<string> potentialJsonFiles = Directory.EnumerateFiles(directoryPath, "*.json", SearchOption.AllDirectories).ToList();
+
 
             if (potentialJsonFiles.Count == 0)
             {
@@ -58,20 +53,35 @@
             }
 
             int progress = 0;
+            int totalFiles = foundFiles.Count;
 
             foreach (string foundFile in foundFiles)
             {
-                Console.WriteLine("Matching JSON: {0}/{1}: {2}",
-                    ++progress, foundFiles.Count, foundFile);
-
+                Console.WriteLine($"Matching JSON: {++progress}/{totalFiles}: {foundFile}");
 
                 // try starts with
-                var match = potentialJsonFiles.Where(x => x.StartsWith(foundFile)).FirstOrDefault();
+                var match = potentialJsonFiles.Where(x => !usedJsonFiles.Contains(x) && x.StartsWith(foundFile)).FirstOrDefault();
 
                 if (match != null)
                 {
                     fileJsonMap[foundFile] = match;
                     continue;
+                }
+
+                string foundFileNameWithoutExtension = Path.GetFileNameWithoutExtension(foundFile);
+                string foundFileName = Path.GetFileName(foundFile);
+
+                string? exactMatch = potentialJsonFiles
+                .FirstOrDefault(jsonFile =>
+                    !usedJsonFiles.Contains(jsonFile) &&
+                    (Path.GetFileNameWithoutExtension(jsonFile).Equals(foundFileNameWithoutExtension, StringComparison.OrdinalIgnoreCase) ||
+                     Path.GetFileName(jsonFile).Equals(foundFileName, StringComparison.OrdinalIgnoreCase)));
+
+                if (exactMatch != null)
+                {
+                    fileJsonMap[foundFile] = exactMatch;
+                    usedJsonFiles.Add(exactMatch); // Mark as used
+                    continue; // Move to the next foundFile
                 }
 
                 // Try Levenshtein
@@ -101,16 +111,10 @@
 
         private static int CalcLevenshteinDistance(string a, string b)
         {
-            if (string.IsNullOrEmpty(a) && string.IsNullOrEmpty(b))
-            {
-                return 0;
-            }
-
             if (string.IsNullOrEmpty(a))
             {
-                return b.Length;
+                return string.IsNullOrEmpty(b) ? 0 : b.Length;
             }
-
             if (string.IsNullOrEmpty(b))
             {
                 return a.Length;

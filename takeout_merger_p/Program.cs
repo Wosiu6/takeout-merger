@@ -3,8 +3,8 @@ using System.Collections.Concurrent;
 
 if (args.Length < 1)
 {
-    Console.WriteLine("Usage: YourAppName.exe <directoryPath> <extension1> [extension2 ...]");
-    Console.WriteLine("Example: YourAppName.exe C:\\MyFolder .txt .log .csv");
+    Console.WriteLine("Usage: takeout_merger_p <directoryPath> <outputPath>]");
+    Console.WriteLine("Example: takeout_merger_p C:\\Downloads\\Takeout C:\\Downloads\\MyOutputFolder");
     return;
 }
 
@@ -12,12 +12,12 @@ string directoryPath = args[0];
 string outputPath = args[1];
 int currentProgress = 0;
 
-ValidateUserInput();
+ValidateWorkingDirectory();
 SetupHandlers();
 
 List<string> foundTagTypesPaths = FileHandler.GetFilesByExtensions(directoryPath, [".tiff", ".jpg", ".jpeg"]);
 List<string> foundPngPaths = FileHandler.GetFilesByExtensions(directoryPath, [".png"]);
-List<string> foundVideos = FileHandler.GetFilesByExtensions(directoryPath, [".mp4", ".mkv", ".mov", ".avi", ".gif", ".mpeg", ".dng"]);
+List<string> foundUnsuportedPaths = FileHandler.GetFilesByExtensions(directoryPath, [".tiff", ".jpg", ".jpeg", ".png", ".json"], exclude: true);
 
 
 // PNGS
@@ -55,7 +55,7 @@ foreach (var foundTagTypesTakeoutPair in foundTagTypesTakeoutPairs)
                     ++currentProgress, foundTagTypesTakeoutPairs.Count, foundTagTypesTakeoutPair.Key);
 }
 
-// MP4s/MKVs/AVIs
+// simple copy
 currentProgress = 0;
 
 foreach (var foundVideo in foundVideos)
@@ -71,7 +71,7 @@ foreach (var foundVideo in foundVideos)
                     ++currentProgress, foundVideos.Count, foundVideo);
 }
 
-void ValidateUserInput()
+void ValidateWorkingDirectory()
 {
     if (!Directory.Exists(directoryPath))
     {
