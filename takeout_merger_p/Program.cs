@@ -58,17 +58,17 @@ foreach (var foundTagTypesTakeoutPair in foundTagTypesTakeoutPairs)
 // simple copy
 currentProgress = 0;
 
-foreach (var foundVideo in foundVideos)
+foreach (var foundUnsuportedPath in foundUnsuportedPaths)
 {
-    var fileNameNoExt = Path.GetFileNameWithoutExtension(foundVideo);
-    var fileExtension = Path.GetExtension(foundVideo);
+    var fileNameNoExt = Path.GetFileNameWithoutExtension(foundUnsuportedPath);
+    var fileExtension = Path.GetExtension(foundUnsuportedPath);
 
     var newPath = FileHandler.GetUniqueFileName($"{outputPath}\\{fileNameNoExt}{fileExtension}");
 
-    File.Copy(foundVideo, newPath);
+    File.Copy(foundUnsuportedPath, newPath);
 
     Console.WriteLine("Copying movies {0}/{1}: {2}",
-                    ++currentProgress, foundVideos.Count, foundVideo);
+                    ++currentProgress, foundUnsuportedPaths.Count, foundUnsuportedPath);
 }
 
 void ValidateWorkingDirectory()
