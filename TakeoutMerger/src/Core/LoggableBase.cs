@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Reflection;
 
-namespace TakeoutMerger.Core
+namespace TakeoutMerger.src.Core
 {
     public abstract class LoggableBase
     {

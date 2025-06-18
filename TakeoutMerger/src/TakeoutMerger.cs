@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
-using TakeoutMerger.Services;
-using TakeoutMerger.Utils;
+using TakeoutMerger.src.Common.Utils;
+using TakeoutMerger.src.Core.Services;
 
-namespace TakeoutMerger
+namespace TakeoutMerger.src
 {
     public class TakeoutMerger
     {
@@ -36,9 +36,12 @@ namespace TakeoutMerger
         private static ILogger SetupLogger()
         {
             using ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
-            {
-                builder.AddConsole();
-            });
+                builder.AddSimpleConsole(options =>
+                {
+                    options.IncludeScopes = true;
+                    options.SingleLine = true;
+                    options.TimestampFormat = "HH:mm:ss ";
+                }));
 
             return loggerFactory.CreateLogger("TakeoutMerger");
         }

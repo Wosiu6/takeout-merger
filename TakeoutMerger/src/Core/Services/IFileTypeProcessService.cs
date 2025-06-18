@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TakeoutMerger.Services
+namespace TakeoutMerger.src.Core.Services
 {
     public interface IFileTypeProcessService
     {

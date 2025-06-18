@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using System.Drawing.Imaging;
 
-namespace TakeoutMerger.Utils
+namespace TakeoutMerger.src.Common.Utils
 {
     public static class ImageUtils
     {

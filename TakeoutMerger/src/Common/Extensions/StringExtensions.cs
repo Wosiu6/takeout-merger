@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TakeoutMerger.Extensions
+namespace TakeoutMerger.src.Common.Extensions
 {
     public static class StringExtensions
     {

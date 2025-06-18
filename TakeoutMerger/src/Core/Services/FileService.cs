@@ -1,8 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
-using TakeoutMerger.Core;
-using TakeoutMerger.Utils;
+using TakeoutMerger.src.Common.Utils;
 
-namespace TakeoutMerger.Services
+namespace TakeoutMerger.src.Core.Services
 {
     public interface IFileService
     {
@@ -34,7 +33,7 @@ namespace TakeoutMerger.Services
                 else
                 {
                     bool containsExtension = lowerCaseExtensions.Contains(fileExtension);
-                    shouldAddFile = (exclude == !containsExtension);
+                    shouldAddFile = exclude == !containsExtension;
                 }
 
                 if (shouldAddFile)

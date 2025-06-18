@@ -1,7 +1,7 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using System.Runtime.InteropServices;
 
-namespace TakeoutMerger.FileHandle
+namespace TakeoutMerger.src.Core.Handlers
 {
     public class UnmanagedFileLoader
     {
@@ -18,8 +18,8 @@ namespace TakeoutMerger.FileHandle
         // see the unmanaged MSDN reference library.
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         static extern SafeFileHandle CreateFile(string lpFileName, uint dwDesiredAccess,
-          uint dwShareMode, IntPtr lpSecurityAttributes, uint dwCreationDisposition,
-          uint dwFlagsAndAttributes, IntPtr hTemplateFile);
+          uint dwShareMode, nint lpSecurityAttributes, uint dwCreationDisposition,
+          uint dwFlagsAndAttributes, nint hTemplateFile);
 
         private SafeFileHandle handleValue = null;
 
@@ -32,7 +32,7 @@ namespace TakeoutMerger.FileHandle
                 throw new ArgumentNullException(nameof(path));
 
             // Try to open the file.
-            handleValue = CreateFile(path, GENERIC_WRITE, 0, IntPtr.Zero, OPEN_EXISTING, 0, IntPtr.Zero);
+            handleValue = CreateFile(path, GENERIC_WRITE, 0, nint.Zero, OPEN_EXISTING, 0, nint.Zero);
 
             // If the handle is invalid,
             // get the last Win32 error

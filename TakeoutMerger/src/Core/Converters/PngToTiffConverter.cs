@@ -1,10 +1,10 @@
 ﻿#pragma warning disable CA1416 // Validate platform compatibility, only Win 6.1+
 
-using TakeoutMerger.Utils;
 using System.Drawing;
 using System.Drawing.Imaging;
+using TakeoutMerger.src.Common.Utils;
 
-namespace TakeoutMerger.Converters
+namespace TakeoutMerger.src.Core.Converters
 {
     public class PngToTiffConverter
     {

@@ -1,4 +1,4 @@
-﻿namespace TakeoutMerger.DTOs
+﻿namespace TakeoutMerger.src.Core.DTOs
 {
     public interface ITimeData
     {

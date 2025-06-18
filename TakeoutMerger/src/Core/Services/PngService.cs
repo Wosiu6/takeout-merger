@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Collections.Frozen;
-using TakeoutMerger.Converters;
-using TakeoutMerger.Core;
-using TakeoutMerger.Handlers;
+using TakeoutMerger.src.Core;
+using TakeoutMerger.src.Core.Converters;
+using TakeoutMerger.src.Core.Handlers;
 
-namespace TakeoutMerger.Services
+namespace TakeoutMerger.src.Core.Services
 {
     public class PngService(ILogger logger, string inputPath, string outputPath) : LoggableBase(logger), IFileTypeProcessService
     {

@@ -1,14 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Drawing;
-using TakeoutMerger.Core;
-using TakeoutMerger.DTOs;
-using TakeoutMerger.Extensions;
-using TakeoutMerger.FileHandle;
-using TakeoutMerger.Tags;
-using TakeoutMerger.Utils;
+using TakeoutMerger.src.Common.Extensions;
+using TakeoutMerger.src.Common.Utils;
+using TakeoutMerger.src.Core;
+using TakeoutMerger.src.Core.DTOs;
+using TakeoutMerger.src.Core.Tags;
 
-namespace TakeoutMerger.Handlers
+namespace TakeoutMerger.src.Core.Handlers
 {
     public interface IMetaDataApplier
     {

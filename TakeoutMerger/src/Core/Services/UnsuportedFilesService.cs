@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
-using TakeoutMerger.Core;
-using TakeoutMerger.Handlers;
-using TakeoutMerger.Utils;
+using TakeoutMerger.src.Common.Utils;
+using TakeoutMerger.src.Core;
+using TakeoutMerger.src.Core.Handlers;
 
-namespace TakeoutMerger.Services
+namespace TakeoutMerger.src.Core.Services
 {
 
     public class UnsuportedFilesService(ILogger logger, string inputPath, string outputPath) : LoggableBase(logger), IFileTypeProcessService

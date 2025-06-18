@@ -1,9 +1,9 @@
-﻿using TakeoutMerger.Tags;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Drawing.Imaging;
 using System.Text;
+using TakeoutMerger.src.Core.Tags;
 
-namespace TakeoutMerger.Extensions
+namespace TakeoutMerger.src.Common.Extensions
 {
     public static class ImageMetaExtensions
     {
