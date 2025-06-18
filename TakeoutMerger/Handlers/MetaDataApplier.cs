@@ -60,7 +60,7 @@ namespace TakeoutMerger.Handlers
 
             if (metadata == null)
             {
-                Console.WriteLine($"No metadata found in JSON file: {jsonPath}");
+                Logger.LogWarning($"No metadata found in JSON file: {jsonPath}");
                 return;
             }
 

@@ -31,7 +31,7 @@ namespace TakeoutMerger.Services
 
                 metaDataApplier.ApplyJsonMetaDataToTagImage(newPath, foundTagTypesTakeoutPair.Value, _outputPath);
 
-                Console.WriteLine("Applying Json to Tags {0}/{1}: {2}",
+                Logger.LogInformation("Applying Json to Tags {0}/{1}: {2}",
                                 ++currentProgress, foundTagTypesTakeoutPairs.Count, foundTagTypesTakeoutPair.Key);
             }
         }

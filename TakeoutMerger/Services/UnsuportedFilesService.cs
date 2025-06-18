@@ -30,7 +30,7 @@ namespace TakeoutMerger.Services
 
                 File.Copy(foundUnsuportedPath, newPath);
 
-                Console.WriteLine("Copying movies {0}/{1}: {2}",
+                Logger.LogInformation("Copying movies {0}/{1}: {2}",
                                 ++currentProgress, foundUnsuportedPaths.Count, foundUnsuportedPath);
             }
         }

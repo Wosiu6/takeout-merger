@@ -16,7 +16,7 @@ namespace TakeoutMerger.Services
     {
         public List<string> GetFilesByExtensions(string directoryPath, List<string> extensions, SearchOption searchOption = SearchOption.AllDirectories, bool exclude = false)
         {
-            Console.WriteLine($"Searching in: {directoryPath}");
+            Logger.LogInformation($"Searching in: {directoryPath}");
 
             List<string> filesList = [];
             IEnumerable<string> allFiles = Directory.EnumerateFiles(directoryPath, "*.*", searchOption);
@@ -45,13 +45,13 @@ namespace TakeoutMerger.Services
                 }
             }
 
-            Console.WriteLine($"Found {filesList.Count} files by {string.Join(",", extensions)}");
+            Logger.LogInformation($"Found {filesList.Count} files by {string.Join(",", extensions)}");
             return filesList;
         }
 
         public Dictionary<string, string> GetFileDataMatches(string directoryPath, List<string> foundFiles)
         {
-            Console.WriteLine($"Matching files with JSONs in: {directoryPath}");
+            Logger.LogInformation($"Matching files with JSONs in: {directoryPath}");
 
             Dictionary<string, string> fileJsonMap = [];
             HashSet<string> usedJsonFiles = [];
@@ -68,7 +68,7 @@ namespace TakeoutMerger.Services
 
             foreach (string foundFile in foundFiles)
             {
-                Console.WriteLine($"Matching JSON: {++progress}/{totalFiles}: {foundFile}");
+                Logger.LogInformation($"Matching JSON: {++progress}/{totalFiles}: {foundFile}");
 
                 // try starts with
                 var match = potentialJsonFiles.Where(x => !usedJsonFiles.Contains(x) && x.StartsWith(foundFile)).FirstOrDefault();
@@ -116,7 +116,7 @@ namespace TakeoutMerger.Services
                 }
             }
 
-            Console.WriteLine($"Matched {fileJsonMap.Count} files in {directoryPath}");
+            Logger.LogInformation($"Matched {fileJsonMap.Count} files in {directoryPath}");
             return fileJsonMap;
         }
     }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.Reflection;
 
 namespace TakeoutMerger.Core
 {
@@ -9,7 +10,7 @@ namespace TakeoutMerger.Core
         public LoggableBase(ILogger logger)
         {
             Logger = logger;
-            Logger.BeginScope(this.GetType().Name);
+            Logger.BeginScope(GetType().BaseType.Name);
         }
     }
 }
