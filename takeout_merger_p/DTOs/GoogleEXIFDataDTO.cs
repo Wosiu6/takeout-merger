@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace takeout_merger_p.DTO
+namespace TakeoutMerger.DTO
 {
-    public class CreationTime
+    public class CreationTime : ITimeData
     {
         [JsonProperty("timestamp")]
         public string? Timestamp { get; set; }
@@ -11,7 +11,7 @@ namespace takeout_merger_p.DTO
         public string? Formatted { get; set; }
     }
 
-    public class PhotoTakenTime
+    public class PhotoTakenTime : ITimeData
     {
         [JsonProperty("timestamp")]
         public string? Timestamp { get; set; }
@@ -23,7 +23,7 @@ namespace takeout_merger_p.DTO
     public class GeoData
     {
         [JsonProperty("latitude")]
-        public double Latitude { get; set; }
+        public double? Latitude { get; set; }
 
         [JsonProperty("longitude")]
         public double? Longitude { get; set; }

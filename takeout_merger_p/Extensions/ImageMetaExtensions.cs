@@ -1,25 +1,26 @@
-﻿using System.Drawing;
+﻿using TakeoutMerger.Tags;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.Text;
-using takeout_merger_p.DTO;
+using TakeoutMerger.DTO;
 
-namespace takeout_merger_p
+namespace TakeoutMerger.Extensions
 {
     public static class ImageMetaExtensions
     {
         private const string _dateTimeFormat = "yyyy:MM:dd HH:mm:ss";
 
-        public static void SetTitle(this Image image, string text)
+        public static void SetTitle(this Image image, string? text)
         {
             SetMetaDataItem(image, ExifTag.IMAGE_DESCRIPTION, (short)TagTypes.ASCII, GetNullTerminatedString(text));
         }
 
-        public static void SetDescription(this Image image, string text)
+        public static void SetDescription(this Image image, string? text)
         {
             SetMetaDataItem(image, ExifTag.USER_COMMENT, (short)TagTypes.ASCII, GetNullTerminatedString(text));
         }
 
-        public static void SetAuthor(this Image image, string text)
+        public static void SetAuthor(this Image image, string? text)
         {
             SetMetaDataItem(image, ExifTag.ARTIST, (short)TagTypes.ASCII, GetNullTerminatedString(text));
         }
@@ -104,8 +105,13 @@ namespace takeout_merger_p
             return BitConverter.GetBytes(number).ToArray();
         }
 
-        private static byte[] GetNullTerminatedString(string text)
+        private static byte[] GetNullTerminatedString(string? text)
         {
+            if (string.IsNullOrEmpty(text))
+            {
+                return [0];
+            }
+
             return Encoding.ASCII.GetBytes(text + "\0");
         }
     }

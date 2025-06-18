@@ -1,5 +1,5 @@
 ﻿
-namespace google_takeout_exif_fix.Utils
+namespace TakeoutMerger.Utils
 {
     public static class MathUtils
     {

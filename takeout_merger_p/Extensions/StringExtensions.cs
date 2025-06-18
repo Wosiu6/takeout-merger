@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace google_takeout_exif_fix.Extensions
+namespace TakeoutMerger.Extensions
 {
     public static class StringExtensions
     {

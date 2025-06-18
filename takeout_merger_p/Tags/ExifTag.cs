@@ -1,4 +1,4 @@
-﻿namespace takeout_merger_p
+﻿namespace TakeoutMerger.Tags
 {
     public static class ExifTag
     {

@@ -1,9 +1,10 @@
 ﻿#pragma warning disable CA1416 // Validate platform compatibility, only Win 6.1+
 
+using TakeoutMerger.Utils;
 using System.Drawing;
 using System.Drawing.Imaging;
 
-namespace takeout_merger_p
+namespace TakeoutMerger.Converters
 {
     public class PngToTiffConverter
     {
@@ -32,7 +33,7 @@ namespace takeout_merger_p
             myEncoderParameters.Param[0] = myEncoderParameter;
 
             var nameWithNoExtension = Path.GetFileNameWithoutExtension(pngFilePath);
-            var newName = FileHandler.GetUniqueFileName($"{OutputPath}\\{nameWithNoExtension}.png.tiff");
+            var newName = FileUtils.GetUniqueFileName($"{OutputPath}\\{nameWithNoExtension}.png.tiff");
 
             bitmap.Save(newName, jgepEncoder, myEncoderParameters);
 
@@ -51,7 +52,7 @@ namespace takeout_merger_p
                     throw new NotSupportedException("TIFF encoder not available");
 
                 var nameWithNoExtension = Path.GetFileNameWithoutExtension(pngFilePath);
-                var newName = FileHandler.GetUniqueFileName($"{OutputPath}\\{nameWithNoExtension}.png.tiff");
+                var newName = FileUtils.GetUniqueFileName($"{OutputPath}\\{nameWithNoExtension}.png.tiff");
                 bitmap.Save(newName, tiffCodec, encoderParams);
 
                 return newName;
@@ -70,7 +71,7 @@ namespace takeout_merger_p
                     throw new NotSupportedException("TIFF encoder not available");
 
                 var nameWithNoExtension = Path.GetFileNameWithoutExtension(pngFilePath);
-                var newName = FileHandler.GetUniqueFileName($"{OutputPath}\\{nameWithNoExtension}.png.tiff");
+                var newName = FileUtils.GetUniqueFileName($"{OutputPath}\\{nameWithNoExtension}.png.tiff");
                 bitmap.Save(newName, tiffCodec, encoderParams);
 
                 return newName;
@@ -89,7 +90,7 @@ namespace takeout_merger_p
                     throw new NotSupportedException("TIFF encoder not available");
 
                 var nameWithNoExtension = Path.GetFileNameWithoutExtension(pngFilePath);
-                var newName = FileHandler.GetUniqueFileName($"{OutputPath}\\{nameWithNoExtension}.png.tiff");
+                var newName = FileUtils.GetUniqueFileName($"{OutputPath}\\{nameWithNoExtension}.png.tiff");
                 bitmap.Save(newName, tiffCodec, encoderParams);
 
                 return newName;

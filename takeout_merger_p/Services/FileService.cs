@@ -1,17 +1,20 @@
-﻿using Newtonsoft.Json;
-using takeout_merger_p.DTO;
+﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using TakeoutMerger.Core;
+using TakeoutMerger.DTO;
+using TakeoutMerger.Utils;
 
-namespace google_takeout_exif_fix.Services
+namespace TakeoutMerger.Services
 {
     public interface IFileService
     {
-        public static abstract List<string> GetFilesByExtensions(string directoryPath, List<string> extensions, SearchOption searchOption = SearchOption.AllDirectories, bool exclude = false);
-        public static abstract Dictionary<string, string>? GetFileDataMatches(string directoryPath, List<string> foundFiles);
+        List<string> GetFilesByExtensions(string directoryPath, List<string> extensions, SearchOption searchOption = SearchOption.AllDirectories, bool exclude = false);
+        Dictionary<string, string> GetFileDataMatches(string directoryPath, List<string> foundFiles);
     }
 
-    public class FileService : IFileService
+    public class FileService(ILogger logger) : LoggableBase(logger), IFileService
     {
-        public static List<string> GetFilesByExtensions(string directoryPath, List<string> extensions, SearchOption searchOption = SearchOption.AllDirectories, bool exclude = false)
+        public List<string> GetFilesByExtensions(string directoryPath, List<string> extensions, SearchOption searchOption = SearchOption.AllDirectories, bool exclude = false)
         {
             Console.WriteLine($"Searching in: {directoryPath}");
 
@@ -46,19 +49,18 @@ namespace google_takeout_exif_fix.Services
             return filesList;
         }
 
-        public static Dictionary<string, string>? GetFileDataMatches(string directoryPath, List<string> foundFiles)
+        public Dictionary<string, string> GetFileDataMatches(string directoryPath, List<string> foundFiles)
         {
             Console.WriteLine($"Matching files with JSONs in: {directoryPath}");
 
             Dictionary<string, string> fileJsonMap = [];
-            HashSet<string> usedJsonFiles = new();
+            HashSet<string> usedJsonFiles = [];
 
             List<string> potentialJsonFiles = Directory.EnumerateFiles(directoryPath, "*.json", SearchOption.AllDirectories).ToList();
 
-
             if (potentialJsonFiles.Count == 0)
             {
-                return null;
+                return [];
             }
 
             int progress = 0;
@@ -99,7 +101,7 @@ namespace google_takeout_exif_fix.Services
 
                 foreach (string jsonFile in potentialJsonFiles)
                 {
-                    int distance = CalcLevenshteinDistance(foundFile, jsonFile);
+                    int distance = MathUtils.CalcLevenshteinDistance(foundFile, jsonFile);
 
                     if (distance < minDistance)
                     {
@@ -116,113 +118,6 @@ namespace google_takeout_exif_fix.Services
 
             Console.WriteLine($"Matched {fileJsonMap.Count} files in {directoryPath}");
             return fileJsonMap;
-        }
-
-        public static void ApplyJsonDataToImage(string imagePath, string jsonPath)
-        {
-            var imageName = Path.GetFileNameWithoutExtension(imagePath);
-            var imageExtension = Path.GetExtension(imagePath);
-            var newName = $"{OutputPath}\\{imageName}{imageExtension}";
-            newName = FileHandler.GetUniqueFileName(newName);
-
-            string newFilePath = string.Empty;
-
-            var jsonData = File.ReadAllText(jsonPath);
-            var metadata = JsonConvert.DeserializeObject<GoogleEXIFDataDTO>(jsonData);
-
-            if (metadata == null)
-            {
-                Console.WriteLine($"No metadata found in JSON file: {jsonPath}");
-                return;
-            }
-
-            using (var image = Image.FromFile(imagePath))
-            {
-                ApplyGeoData(image, metadata);
-                ApplyDescriptiveData(image, metadata);
-                ApplyTimeData(image, metadata);
-
-                newFilePath = image.SaveAsUncompressedTiff(newName, OutputPath);
-            }
-
-            ApplyFileData(newFilePath, metadata);
-
-            //delete old file
-            File.Delete(imagePath);
-        }
-
-        public static void ApplyJsonDataToTagImage(string imagePath, string jsonPath)
-        {
-            var imageName = Path.GetFileNameWithoutExtension(imagePath);
-            var imageExtension = Path.GetExtension(imagePath);
-            var newName = $"{OutputPath}\\{imageName}{imageExtension}";
-            newName = FileHandler.GetUniqueFileName(newName);
-
-            var jsonData = File.ReadAllText(jsonPath);
-            var metadata = JsonConvert.DeserializeObject<GoogleEXIFDataDTO>(jsonData);
-
-            if (metadata == null)
-            {
-                Console.WriteLine($"No metadata found in JSON file: {jsonPath}");
-                return;
-            }
-
-            using (var image = Image.FromFile(imagePath))
-            {
-                ApplyGeoData(image, metadata);
-                ApplyDescriptiveData(image, metadata);
-                ApplyTimeData(image, metadata);
-
-                image.SaveAsUncompressedExtension(newName, OutputPath);
-            }
-
-            ApplyFileData(newName, metadata);
-
-            //delete old file
-            File.Delete(imagePath);
-        }
-
-        private static void ApplyFileData(string newFilePath, GoogleEXIFDataDTO metadata)
-        {
-            if (metadata.CreationTime != null)
-            {
-                var dateTime = string.IsNullOrEmpty(metadata.CreationTime.Formatted)
-                ? FromTimestamp(metadata.CreationTime.Timestamp)
-                : FromFormattedString(metadata.CreationTime.Formatted);
-
-                File.SetCreationTime(newFilePath, dateTime);
-                File.SetLastAccessTime(newFilePath, dateTime);
-            }
-            if (metadata.PhotoTakenTime != null)
-            {
-                var dateTimeOriginal = string.IsNullOrEmpty(metadata.PhotoTakenTime.Formatted)
-                    ? FromTimestamp(metadata.PhotoTakenTime.Timestamp)
-                    : FromFormattedString(metadata.PhotoTakenTime.Formatted);
-
-
-                File.SetLastWriteTime(newFilePath, dateTimeOriginal);
-            }
-        }
-
-        private static void ApplyTimeData(Image image, GoogleEXIFDataDTO metadata)
-        {
-            if (metadata.CreationTime != null)
-            {
-                var dateTime = string.IsNullOrEmpty(metadata.CreationTime.Formatted)
-                ? FromTimestamp(metadata.CreationTime.Timestamp)
-                : FromFormattedString(metadata.CreationTime.Formatted);
-
-                image.SetCreationTime(dateTime);
-            }
-
-            if (metadata.PhotoTakenTime != null)
-            {
-                var dateTimeOriginal = string.IsNullOrEmpty(metadata.PhotoTakenTime.Formatted)
-                ? FromTimestamp(metadata.PhotoTakenTime.Timestamp)
-                : FromFormattedString(metadata.PhotoTakenTime.Formatted);
-
-                image.SetDateTimeOriginal(dateTimeOriginal);
-            }
         }
     }
 }
