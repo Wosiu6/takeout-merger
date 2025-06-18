@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using TakeoutMerger.Core;
-using TakeoutMerger.DTO;
 using TakeoutMerger.Utils;
 
 namespace TakeoutMerger.Services

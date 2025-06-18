@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using System.Drawing;
 using TakeoutMerger.Core;
-using TakeoutMerger.DTO;
+using TakeoutMerger.DTOs;
 using TakeoutMerger.Extensions;
 using TakeoutMerger.FileHandle;
 using TakeoutMerger.Tags;

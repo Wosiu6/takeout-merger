@@ -2,7 +2,6 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Text;
-using TakeoutMerger.DTO;
 
 namespace TakeoutMerger.Extensions
 {

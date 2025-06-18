@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace TakeoutMerger.DTO
+namespace TakeoutMerger.DTOs
 {
     public class CreationTime : ITimeData
     {
