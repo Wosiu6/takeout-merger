@@ -9,6 +9,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Monikers.imagemanifest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <content Include="Monikers.imagemanifest">
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="8.3.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.6" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.6" />
@@ -16,12 +26,6 @@
     <PackageReference Include="NSubstitute" Version="5.3.0" />
     <PackageReference Include="System.Drawing.Common" Version="9.0.4" />
     <PackageReference Include="xunit" Version="2.9.3" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="fix-names-google-takeout.sh">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>

@@ -1,24 +1,25 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.Collections.Frozen;
 using TakeoutMerger.src.Common.Utils;
 
 namespace TakeoutMerger.src.Core.Services
 {
     public interface IFileService
     {
-        List<string> GetFilesByExtensions(string directoryPath, List<string> extensions, SearchOption searchOption = SearchOption.AllDirectories, bool exclude = false);
+        List<string> GetFilesByExtensions(string directoryPath, ICollection<string> extensions, SearchOption searchOption = SearchOption.AllDirectories, bool excludeExtensions = false);
         Dictionary<string, string> GetFileDataMatches(string directoryPath, List<string> foundFiles);
     }
 
     public class FileService(ILogger logger) : LoggableBase(logger), IFileService
     {
-        public List<string> GetFilesByExtensions(string directoryPath, List<string> extensions, SearchOption searchOption = SearchOption.AllDirectories, bool exclude = false)
+        public List<string> GetFilesByExtensions(string directoryPath, ICollection<string> extensions, SearchOption searchOption = SearchOption.AllDirectories, bool excludeExtensions = false)
         {
             Logger.LogInformation($"Searching in: {directoryPath}");
 
             List<string> filesList = [];
             IEnumerable<string> allFiles = Directory.EnumerateFiles(directoryPath, "*.*", searchOption);
 
-            List<string> lowerCaseExtensions = extensions.Select(ext => ext.ToLowerInvariant()).ToList();
+            ICollection<string> lowerCaseExtensions = extensions.Select(ext => ext.ToLowerInvariant()).ToFrozenSet();
 
             foreach (string file in allFiles)
             {
@@ -28,12 +29,12 @@ namespace TakeoutMerger.src.Core.Services
 
                 if (string.IsNullOrEmpty(fileExtension))
                 {
-                    shouldAddFile = exclude;
+                    shouldAddFile = excludeExtensions;
                 }
                 else
                 {
                     bool containsExtension = lowerCaseExtensions.Contains(fileExtension);
-                    shouldAddFile = exclude == !containsExtension;
+                    shouldAddFile = excludeExtensions == !containsExtension;
                 }
 
                 if (shouldAddFile)
@@ -52,6 +53,13 @@ namespace TakeoutMerger.src.Core.Services
 
             Dictionary<string, string> fileJsonMap = [];
             HashSet<string> usedJsonFiles = [];
+
+            string[] directories = Directory.GetDirectories(directoryPath, "*", SearchOption.AllDirectories);
+
+            foreach (var directory in directories)
+            {
+                List<string> potentialJsonFiles = Directory.EnumerateFiles(directoryPath, "*.json", SearchOption.TopDirectoryOnly).ToList();
+            }
 
             List<string> potentialJsonFiles = Directory.EnumerateFiles(directoryPath, "*.json", SearchOption.AllDirectories).ToList();
 

@@ -23,6 +23,11 @@ namespace TakeoutMerger.src
 
             DirectoryUtils.EnsureWorkingDirectoryExists(inputPath, outputPath, logger);
 
+
+            JsonService jsonService = new(logger, inputPath, outputPath);
+            jsonService.Process();
+
+            return;
             PngService pngService = new(logger, inputPath, outputPath);
             pngService.Process();
 

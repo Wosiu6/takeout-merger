@@ -14,7 +14,7 @@ namespace TakeoutMerger.src.Core.Services
         public void Process()
         {
             IFileService fileService = new FileService(Logger);
-            List<string> foundUnsuportedPaths = fileService.GetFilesByExtensions(_inputPath, [".tiff", ".jpg", ".jpeg", ".png", ".json"], exclude: true);
+            List<string> foundUnsuportedPaths = fileService.GetFilesByExtensions(_inputPath, [".tiff", ".jpg", ".jpeg", ".png", ".json"], excludeExtensions: true);
             Dictionary<string, string>? foundTagTypesTakeoutPairs = fileService.GetFileDataMatches(_inputPath, foundUnsuportedPaths);
 
             IMetaDataApplier metaDataApplier = new MetaDataApplier(Logger);
