@@ -15,9 +15,11 @@ namespace TakeoutMerger.src
 
         public void Start(string[] args)
         {
+#if DEBUG
             string logFilePath = "console_log.txt";
             using (StreamWriter logFileWriter = new(logFilePath, append: true))
             {
+#endif
                 ILogger logger = SetupLogger(logFileWriter);
 
                 if (args.Length < 1)
@@ -49,7 +51,9 @@ namespace TakeoutMerger.src
                 subDirectoryTasks.Add(topDirectoryTask);
 
                 Task.WaitAll(subDirectoryTasks);
+#if DEBUG
             }
+#endif
         }
 
         private Task ProcessFolder(ILogger logger, string inputPath, string outputPath, SearchOption searchOption = SearchOption.AllDirectories)
