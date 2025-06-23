@@ -8,6 +8,8 @@ namespace TakeoutMerger.src.Common.Extensions
     public static class ImageMetaExtensions
     {
         private const string _dateTimeFormat = "yyyy:MM:dd HH:mm:ss";
+        private const string _dateFormat = "yyyy:MM:dd";
+        private const string _timeFormat = "HH:mm:ss";
 
         public static void SetTitle(this Image image, string? text)
         {
@@ -48,6 +50,22 @@ namespace TakeoutMerger.src.Common.Extensions
             SetMetaDataItem(image, ExifTag.SUB_SEC_TIME_ORIGINAL, (short)TagTypes.ASCII, GetNullTerminatedString(seconds));
         }
 
+        public static void SetDateTimeGPS(this Image image, DateTime dateTimeOriginal)
+        {
+            var dateToSave = dateTimeOriginal.ToString(_dateFormat);
+            var timeToSave = dateTimeOriginal.ToString(_timeFormat);
+
+            SetMetaDataItem(image, ExifTag.GPS_DATE_STAMP, (short)TagTypes.RATIONAL, GetNullTerminatedString(dateToSave));
+            SetMetaDataItem(image, ExifTag.GPS_TIME_STAMP, (short)TagTypes.RATIONAL, GetNullTerminatedString(timeToSave));
+        }
+
+        public static void SetGPSVersionId(this Image image)
+        {
+            byte[] byteArrayBigEndianGPSVersionId = [0x02, 0x00, 0x00, 0x00];
+
+            SetMetaDataItem(image, ExifTag.GPS_VERSION_ID, (short)TagTypes.BYTE, byteArrayBigEndianGPSVersionId);
+        }
+
         public static void SetLatitude(this Image image, double latitude)
         {
             SetMetaDataItem(image, ExifTag.GPS_LATITUDE, (short)TagTypes.RATIONAL, GetPairUnsigned32Integer(latitude));
@@ -58,9 +76,14 @@ namespace TakeoutMerger.src.Common.Extensions
             SetMetaDataItem(image, ExifTag.GPS_LONGITUDE, (short)TagTypes.RATIONAL, GetPairUnsigned32Integer(longitude));
         }
 
+        public static void SetGPSProcessingMethod(this Image image)
+        {
+            SetMetaDataItem(image, ExifTag.GPS_PROCESSING_METHOD, (short)TagTypes.ASCII, GetNullTerminatedString("GPS"));
+        }
+
         public static void SetAltitude(this Image image, double altitude)
         {
-            SetMetaDataItem(image, ExifTag.GPS_LONGITUDE, (short)TagTypes.RATIONAL, GetPairUnsigned32Integer(altitude));
+            SetMetaDataItem(image, ExifTag.GPS_ALTITUDE, (short)TagTypes.RATIONAL, GetPairUnsigned32Integer(altitude));
         }
 
         public static double GetMetaDataDouble(this Image image, int id)

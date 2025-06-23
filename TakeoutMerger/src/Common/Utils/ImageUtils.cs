@@ -31,7 +31,7 @@ namespace TakeoutMerger.src.Common.Utils
 
             var codec = GetEncoder(GetMimeType(extension));
             if (codec == null)
-                throw new NotSupportedException("TIFF encoder not available");
+                throw new NotSupportedException($"{extension} encoder not available");
 
 
             var nameWithNoExtension = Path.GetFileNameWithoutExtension(imagePath);

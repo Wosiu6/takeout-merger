@@ -37,10 +37,12 @@ namespace TakeoutMerger.src.Core.Handlers
             {
                 ApplyGeoData(image, metadata);
                 ApplyDescriptiveData(image, metadata);
+                ApplyMiscData(image, metadata, imagePath);
+
                 newFilePath = image.SaveAsUncompressedTiff(newName, outputPath);
             }
 
-            ApplyFileData(newFilePath, metadata);
+            //ApplyFileData(newFilePath, metadata);
 
             //delete old file
             File.Delete(imagePath);
@@ -52,6 +54,8 @@ namespace TakeoutMerger.src.Core.Handlers
             var imageExtension = Path.GetExtension(imagePath);
             var newName = $"{outputPath}\\{imageName}{imageExtension}";
             newName = FileUtils.GetUniqueFileName(newName);
+
+            string newFilePath = string.Empty;
 
             var jsonData = File.ReadAllText(jsonPath);
             var metadata = JsonConvert.DeserializeObject<GoogleEXIFDataDTO>(jsonData);
@@ -66,11 +70,12 @@ namespace TakeoutMerger.src.Core.Handlers
             {
                 ApplyGeoData(image, metadata);
                 ApplyDescriptiveData(image, metadata);
+                ApplyMiscData(image, metadata, imagePath);
 
-                image.SaveAsUncompressedFile(newName, outputPath);
+                newFilePath = image.SaveAsUncompressedFile(newName, outputPath);
             }
 
-            ApplyFileData(newName, metadata);
+            //ApplyFileData(newFilePath, metadata);
 
             //delete old file
             File.Delete(imagePath);
@@ -78,19 +83,18 @@ namespace TakeoutMerger.src.Core.Handlers
 
         private void ApplyFileData(string newFilePath, GoogleEXIFDataDTO metadata)
         {
-            UnmanagedFileLoader loader = new UnmanagedFileLoader(newFilePath);
-            var fileSafeHandle = loader.Handle;
+            // consider using UnmanagedFileLoader concept
 
             if (metadata.CreationTime != null)
             {
-                var creationDateTime = GetDateTimeFromTimeData(metadata.CreationTime, () => File.GetCreationTime(fileSafeHandle));
-                File.SetCreationTime(fileSafeHandle, creationDateTime);
-                File.SetLastAccessTime(fileSafeHandle, creationDateTime);
+                var creationDateTime = GetDateTimeFromTimeData(metadata.CreationTime, () => File.GetCreationTime(newFilePath));
+                File.SetCreationTime(newFilePath, creationDateTime);
+                File.SetLastAccessTime(newFilePath, creationDateTime);
             }
             if (metadata.PhotoTakenTime != null)
             {
-                var photoTakenDateTime = GetDateTimeFromTimeData(metadata.PhotoTakenTime, () => File.GetLastWriteTime(fileSafeHandle));
-                File.SetLastWriteTime(fileSafeHandle, photoTakenDateTime);
+                var photoTakenDateTime = GetDateTimeFromTimeData(metadata.PhotoTakenTime, () => File.GetLastWriteTime(newFilePath));
+                File.SetLastWriteTime(newFilePath, photoTakenDateTime);
             }
         }
 
@@ -105,6 +109,21 @@ namespace TakeoutMerger.src.Core.Handlers
                 return timeData.Timestamp.GetDateTimeFromTimestamp();
             }
             return fallback();
+        }
+
+        private void ApplyMiscData(Image image, GoogleEXIFDataDTO metadata, string filePath)
+        {
+            if (image is null || metadata is null)
+            {
+                return;
+            }
+
+            var creationDateTime = GetDateTimeFromTimeData(metadata.CreationTime, () => File.GetCreationTime(filePath));
+            var photoTakenDateTime = GetDateTimeFromTimeData(metadata.PhotoTakenTime, () => File.GetLastWriteTime(filePath));
+
+            image.SetDateTimeOriginal(creationDateTime);
+            image.SetCreationTime(creationDateTime);
+            image.SetDateTimeGPS(photoTakenDateTime);
         }
 
         private void ApplyDescriptiveData(Image image, GoogleEXIFDataDTO metadata)
@@ -146,6 +165,9 @@ namespace TakeoutMerger.src.Core.Handlers
                 Logger.LogWarning($"Metadata is null for image {image.Tag}, cannot apply geo data.");
                 return;
             }
+
+            image.SetGPSProcessingMethod();
+            image.SetGPSVersionId();
 
             GeoDataExif? geoDataExif = metadata.GeoDataExif;
             GeoData? geoData = metadata.GeoData;
