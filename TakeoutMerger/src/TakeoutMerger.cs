@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.Diagnostics.Metrics;
 using TakeoutMerger.src.Common.Utils;
 using TakeoutMerger.src.Core.Services;
 
@@ -6,6 +7,9 @@ namespace TakeoutMerger.src
 {
     public class TakeoutMerger
     {
+        private int _counter = 0;
+        private int _amountOfFolders = 0;
+
         public void Start(string[] args)
         {
             ILogger logger = SetupLogger();
@@ -24,6 +28,7 @@ namespace TakeoutMerger.src
             DirectoryUtils.EnsureWorkingDirectoryExists(inputPath, outputPath, logger);
             
             var subDirectories = Directory.GetDirectories(inputPath, "*", SearchOption.AllDirectories);
+            _amountOfFolders = subDirectories.Count() + 1; // +1 for the top directory itself
 
             List<Task> subDirectoryTasks = [];
 
@@ -59,6 +64,9 @@ namespace TakeoutMerger.src
 
                     UnsuportedFilesService unsuportedFilesService = new(logger, inputPath, outputPath, searchOption);
                     unsuportedFilesService.Process();
+
+                    Interlocked.Increment(ref _counter);
+                    logger.LogCritical($"Progress: {_counter}/{_amountOfFolders}.");
                 }
                 catch (Exception ex)
                 {
