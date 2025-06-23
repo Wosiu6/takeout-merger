@@ -74,6 +74,7 @@ namespace TakeoutMerger.src.Core.Services
                 if (match != null)
                 {
                     fileJsonMap[foundFile] = match;
+                    Logger.LogInformation($"Found match for {foundFile}: {match}");
                     continue;
                 }
 
@@ -90,6 +91,7 @@ namespace TakeoutMerger.src.Core.Services
                 {
                     fileJsonMap[foundFile] = exactMatch;
                     usedJsonFiles.Add(exactMatch); // Mark as used
+                    Logger.LogInformation($"Found exact match for {foundFile}: {exactMatch}");
                     continue; // Move to the next foundFile
                 }
 
@@ -111,6 +113,7 @@ namespace TakeoutMerger.src.Core.Services
                 if (closestMatch != null)
                 {
                     fileJsonMap[foundFile] = closestMatch;
+                    Logger.LogInformation($"Found closest match for {foundFile}: {closestMatch}");
                 }
             }
 

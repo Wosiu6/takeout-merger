@@ -1,5 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Configuration;
 using System.Diagnostics.Metrics;
+using TakeoutMerger.src.Common.Logging;
 using TakeoutMerger.src.Common.Utils;
 using TakeoutMerger.src.Core.Services;
 
@@ -12,37 +15,41 @@ namespace TakeoutMerger.src
 
         public void Start(string[] args)
         {
-            ILogger logger = SetupLogger();
-
-            if (args.Length < 1)
+            string logFilePath = "console_log.txt";
+            using (StreamWriter logFileWriter = new(logFilePath, append: true))
             {
-                logger.LogError("Insufficient parameters supplied.");
-                logger.LogInformation("Usage: TakeoutMerger <directoryPath> <outputPath>");
-                logger.LogInformation("Example: TakeoutMerger C:\\Downloads\\Takeout C:\\Downloads\\MyOutputFolder");
-                return;
+                ILogger logger = SetupLogger(logFileWriter);
+
+                if (args.Length < 1)
+                {
+                    logger.LogError("Insufficient parameters supplied.");
+                    logger.LogInformation("Usage: TakeoutMerger <directoryPath> <outputPath>");
+                    logger.LogInformation("Example: TakeoutMerger C:\\Downloads\\Takeout C:\\Downloads\\MyOutputFolder");
+                    return;
+                }
+
+                string inputPath = args[0];
+                string outputPath = args[1];
+
+                DirectoryUtils.EnsureWorkingDirectoryExists(inputPath, outputPath, logger);
+
+                var subDirectories = Directory.GetDirectories(inputPath, "*", SearchOption.AllDirectories);
+                _amountOfFolders = subDirectories.Count() + 1; // +1 for the top directory itself
+
+                List<Task> subDirectoryTasks = [];
+
+                foreach (var subDirectory in subDirectories)
+                {
+                    var task = ProcessFolder(logger, subDirectory, outputPath);
+
+                    subDirectoryTasks.Add(task);
+                }
+
+                var topDirectoryTask = ProcessFolder(logger, inputPath, outputPath, searchOption: SearchOption.TopDirectoryOnly);
+                subDirectoryTasks.Add(topDirectoryTask);
+
+                Task.WaitAll(subDirectoryTasks);
             }
-
-            string inputPath = args[0];
-            string outputPath = args[1];
-
-            DirectoryUtils.EnsureWorkingDirectoryExists(inputPath, outputPath, logger);
-            
-            var subDirectories = Directory.GetDirectories(inputPath, "*", SearchOption.AllDirectories);
-            _amountOfFolders = subDirectories.Count() + 1; // +1 for the top directory itself
-
-            List<Task> subDirectoryTasks = [];
-
-            foreach (var subDirectory in subDirectories)
-            {
-                var task = ProcessFolder(logger, subDirectory, outputPath);
-
-                subDirectoryTasks.Add(task);
-            }
-
-            var topDirectoryTask = ProcessFolder(logger, inputPath, outputPath, searchOption: SearchOption.TopDirectoryOnly);
-            subDirectoryTasks.Add(topDirectoryTask);
-
-            Task.WaitAll(subDirectoryTasks);
         }
 
         private Task ProcessFolder(ILogger logger, string inputPath, string outputPath, SearchOption searchOption = SearchOption.AllDirectories)
@@ -75,10 +82,12 @@ namespace TakeoutMerger.src
             });
         }
 
-        private ILogger SetupLogger()
+        private ILogger SetupLogger(StreamWriter logFileWriter)
         {
             using ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
-                builder.AddSimpleConsole(options =>
+                builder
+                .AddProvider(new CustomFileLoggerProvider(logFileWriter))
+                .AddSimpleConsole(options =>
                 {
                     options.IncludeScopes = true;
                     options.SingleLine = true;
