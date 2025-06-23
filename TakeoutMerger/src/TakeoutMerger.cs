@@ -22,23 +22,52 @@ namespace TakeoutMerger.src
             string outputPath = args[1];
 
             DirectoryUtils.EnsureWorkingDirectoryExists(inputPath, outputPath, logger);
+            
+            var subDirectories = Directory.GetDirectories(inputPath, "*", SearchOption.AllDirectories);
 
+            List<Task> subDirectoryTasks = [];
 
-            JsonService jsonService = new(logger, inputPath, outputPath);
-            jsonService.Process();
+            foreach (var subDirectory in subDirectories)
+            {
+                var task = ProcessFolder(logger, subDirectory, outputPath);
 
-            return;
-            PngService pngService = new(logger, inputPath, outputPath);
-            pngService.Process();
+                subDirectoryTasks.Add(task);
+            }
 
-            TagImageService tagImageService = new(logger, inputPath, outputPath);
-            tagImageService.Process();
+            var topDirectoryTask = ProcessFolder(logger, inputPath, outputPath, searchOption: SearchOption.TopDirectoryOnly);
+            subDirectoryTasks.Add(topDirectoryTask);
 
-            UnsuportedFilesService unsuportedFilesService = new(logger, inputPath, outputPath);
-            unsuportedFilesService.Process();
+            Task.WaitAll(subDirectoryTasks);
         }
 
-        private static ILogger SetupLogger()
+        private Task ProcessFolder(ILogger logger, string inputPath, string outputPath, SearchOption searchOption = SearchOption.AllDirectories)
+        {
+            return Task.Run(() =>
+            {
+                try
+                {
+                    logger.LogInformation($"Processing folder: {inputPath}");
+
+                    JsonService jsonService = new(logger, inputPath, outputPath, searchOption);
+                    jsonService.Process();
+
+                    PngService pngService = new(logger, inputPath, outputPath, searchOption);
+                    pngService.Process();
+
+                    TagImageService tagImageService = new(logger, inputPath, outputPath, searchOption);
+                    tagImageService.Process();
+
+                    UnsuportedFilesService unsuportedFilesService = new(logger, inputPath, outputPath, searchOption);
+                    unsuportedFilesService.Process();
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, $"Error processing folder: {inputPath}");
+                }
+            });
+        }
+
+        private ILogger SetupLogger()
         {
             using ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
                 builder.AddSimpleConsole(options =>

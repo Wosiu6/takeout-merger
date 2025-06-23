@@ -13,12 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <content Include="Monikers.imagemanifest">
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </content>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="8.3.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.6" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.6" />

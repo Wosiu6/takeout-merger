@@ -3,36 +3,37 @@ using TakeoutMerger.src.Core.Handlers;
 
 namespace TakeoutMerger.src.Core.Services
 {
-    public class JsonService : LoggableBase, IFileTypeProcessService
+    public class JsonService(ILogger logger, string inputPath, string outputPath, SearchOption searchOption = SearchOption.AllDirectories) : LoggableBase(logger), IFileTypeProcessService
     {
-        private readonly ILogger _logger;
-        private readonly string _inputPath;
-        private readonly string _outputPath;
-        public JsonService(ILogger logger, string inputPath, string outputPath) : base(logger)
-        {
-            _logger = logger;
-            _inputPath = inputPath;
-            _outputPath = outputPath;
-        }
+        private readonly ILogger _logger = logger;
+        private readonly string _inputPath = inputPath;
+        private readonly string _outputPath = outputPath;
+        private readonly SearchOption _searchOption = searchOption;
+
         public void Process()
         {
-            _logger.LogInformation("Processing JSON files from {InputPath} to {OutputPath}", _inputPath, _outputPath);
+            _logger.LogInformation("Processing JSON files int {InputPath}", _inputPath);
 
             IFileService fileService = new FileService(Logger);
-            List<string> foundJsons = fileService.GetFilesByExtensions(_inputPath, [".json"]);
+            List<string> foundJsons = fileService.GetFilesByExtensions(_inputPath, [".json"], searchOption: _searchOption);
+
+            if (foundJsons.Count == 0)
+            {
+                Logger.LogInformation("No JSON files found in {InputPath}", _inputPath);
+                return;
+            }
 
             IJsonNameHandler jsonNameHandler = new JsonNameHandler(Logger);
-
-            HashSet<string> newJsonFiles = [];
 
             int currentProgress = 0;
 
             foreach (var foundJson in foundJsons)
             {
                 var newJsonFile = jsonNameHandler.GenerateNewJsonFile(foundJson, _outputPath);
-                newJsonFiles.Add(newJsonFile);
 
-                Logger.LogInformation("Applying Json to PNGs {0}/{1}: {2}",
+                File.Delete(foundJson);
+
+                Logger.LogInformation("Generating new json {0}/{1}: {2}",
                                 ++currentProgress, foundJsons.Count, foundJson);
             }
         }

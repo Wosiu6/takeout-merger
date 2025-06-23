@@ -54,13 +54,6 @@ namespace TakeoutMerger.src.Core.Services
             Dictionary<string, string> fileJsonMap = [];
             HashSet<string> usedJsonFiles = [];
 
-            string[] directories = Directory.GetDirectories(directoryPath, "*", SearchOption.AllDirectories);
-
-            foreach (var directory in directories)
-            {
-                List<string> potentialJsonFiles = Directory.EnumerateFiles(directoryPath, "*.json", SearchOption.TopDirectoryOnly).ToList();
-            }
-
             List<string> potentialJsonFiles = Directory.EnumerateFiles(directoryPath, "*.json", SearchOption.AllDirectories).ToList();
 
             if (potentialJsonFiles.Count == 0)

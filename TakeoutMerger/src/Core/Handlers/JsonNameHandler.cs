@@ -26,10 +26,9 @@ namespace TakeoutMerger.src.Core.Handlers
 
             if (!File.Exists(newJsonPath))
             {
-                File.Copy(originalJsonPath, newJsonPath);
+                File.Copy(originalJsonPath, newJsonPath, true);
             }
 
-            File.Delete(originalJsonPath);
             return newJsonPath;
         }
     }

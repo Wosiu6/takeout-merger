@@ -7,15 +7,23 @@ using TakeoutMerger.src.Core.Handlers;
 
 namespace TakeoutMerger.src.Core.Services
 {
-    public class PngService(ILogger logger, string inputPath, string outputPath) : LoggableBase(logger), IFileTypeProcessService
+    public class PngService(ILogger logger, string inputPath, string outputPath, SearchOption searchOption = SearchOption.AllDirectories) : LoggableBase(logger), IFileTypeProcessService
     {
         private readonly string _inputPath = inputPath;
         private readonly string _outputPath = outputPath;
+        private readonly SearchOption _searchOption = searchOption;
 
         public void Process()
         {
             IFileService fileService = new FileService(Logger);
-            List<string> foundPngPaths = fileService.GetFilesByExtensions(_inputPath, [".png"]);
+            List<string> foundPngPaths = fileService.GetFilesByExtensions(_inputPath, [".png"], searchOption: _searchOption);
+
+            if (foundPngPaths.Count == 0)
+            {
+                Logger.LogWarning("No PNG files found in the specified directory.");
+                return;
+            }
+
             IDictionary<string, string> pngTakeoutPairs = fileService.GetFileDataMatches(_inputPath, foundPngPaths).ToFrozenDictionary();
 
             IMetaDataApplier metaDataApplier = new MetaDataApplier(Logger);
@@ -24,7 +32,7 @@ namespace TakeoutMerger.src.Core.Services
 
             foreach (var pngTakeoutPair in pngTakeoutPairs)
             {
-                var newPath = PngToTiffConverter.Convert(pngTakeoutPair.Key, CompressionMode.None);
+                var newPath = new PngToTiffConverter(Logger, _outputPath).Convert(pngTakeoutPair.Key, CompressionMode.None);
 
                 var newNameNoExtension = Path.GetFileNameWithoutExtension(newPath);
 
