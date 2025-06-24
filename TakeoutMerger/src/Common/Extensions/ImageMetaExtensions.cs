@@ -1,25 +1,29 @@
 ﻿using System.Drawing;
 using System.Drawing.Imaging;
 using System.Text;
-using takeout_merger_p.DTO;
+using TakeoutMerger.src.Core.Tags;
 
-namespace takeout_merger_p
+namespace TakeoutMerger.src.Common.Extensions
 {
     public static class ImageMetaExtensions
     {
         private const string _dateTimeFormat = "yyyy:MM:dd HH:mm:ss";
+        private const string _dateFormat = "yyyy:MM:dd";
+        private const string _timeFormat = "HH:mm:ss";
 
-        public static void SetTitle(this Image image, string text)
+        private static readonly byte[] _exifVersion = [2, 3, 0, 0];
+
+        public static void SetTitle(this Image image, string? text)
         {
             SetMetaDataItem(image, ExifTag.IMAGE_DESCRIPTION, (short)TagTypes.ASCII, GetNullTerminatedString(text));
         }
 
-        public static void SetDescription(this Image image, string text)
+        public static void SetDescription(this Image image, string? text)
         {
             SetMetaDataItem(image, ExifTag.USER_COMMENT, (short)TagTypes.ASCII, GetNullTerminatedString(text));
         }
 
-        public static void SetAuthor(this Image image, string text)
+        public static void SetAuthor(this Image image, string? text)
         {
             SetMetaDataItem(image, ExifTag.ARTIST, (short)TagTypes.ASCII, GetNullTerminatedString(text));
         }
@@ -48,19 +52,54 @@ namespace takeout_merger_p
             SetMetaDataItem(image, ExifTag.SUB_SEC_TIME_ORIGINAL, (short)TagTypes.ASCII, GetNullTerminatedString(seconds));
         }
 
-        public static void SetLatitude(this Image image, double latitude)
+        public static void SetDateTimeGPS(this Image image, DateTime dateTimeOriginal)
         {
-            SetMetaDataItem(image, ExifTag.GPS_LATITUDE, (short)TagTypes.RATIONAL, GetPairUnsigned32Integer(latitude));
+            var dateToSave = dateTimeOriginal.ToString(_dateFormat);
+            var timeToSave = dateTimeOriginal.ToString(_timeFormat);
+
+            SetMetaDataItem(image, ExifTag.GPS_DATE_STAMP, (short)TagTypes.RATIONAL, GetNullTerminatedString(dateToSave));
+            SetMetaDataItem(image, ExifTag.GPS_TIME_STAMP, (short)TagTypes.RATIONAL, GetNullTerminatedString(timeToSave));
         }
 
-        public static void SetLongitude(this Image image, double longitude)
+        public static void SetGPSVersionId(this Image image)
         {
-            SetMetaDataItem(image, ExifTag.GPS_LONGITUDE, (short)TagTypes.RATIONAL, GetPairUnsigned32Integer(longitude));
+            SetMetaDataItem(image, ExifTag.GPS_VERSION_ID, (short)TagTypes.BYTE, _exifVersion);
         }
 
-        public static void SetAltitude(this Image image, double altitude)
+        public static void SetGeoTags(this Image image, double latitude, double longitude, double altitude)
         {
-            SetMetaDataItem(image, ExifTag.GPS_LONGITUDE, (short)TagTypes.RATIONAL, GetPairUnsigned32Integer(altitude));
+            string latHemisphere = "N";
+            if (latitude < 0)
+            {
+                latHemisphere = "S";
+                latitude = -latitude;
+            }
+
+            string lngHemisphere = "E";
+            if (longitude < 0)
+            {
+                lngHemisphere = "W";
+                longitude = -longitude;
+            }
+
+            byte[] altitudeRef = [0];
+            if (altitude < 0)
+            {
+                altitudeRef = [1];
+                altitude = -altitude;
+            }
+
+            SetMetaDataItem(image, ExifTag.GPS_LATITUDE, (short)TagTypes.RATIONAL, latitude.ConvertToRationalTriplet());
+            SetMetaDataItem(image, ExifTag.GPS_LATITUDE_REF, (short)TagTypes.ASCII, GetNullTerminatedString(latHemisphere));
+            SetMetaDataItem(image, ExifTag.GPS_LONGITUDE, (short)TagTypes.RATIONAL, longitude.ConvertToRationalTriplet());
+            SetMetaDataItem(image, ExifTag.GPS_LONGITUDE_REF, (short)TagTypes.ASCII, GetNullTerminatedString(lngHemisphere));
+            SetMetaDataItem(image, ExifTag.GPS_ALTITUDE, (short)TagTypes.RATIONAL, altitude.ConvertToRationalTriplet());
+            SetMetaDataItem(image, ExifTag.GPS_ALTITUDE_REF, (short)TagTypes.BYTE, altitudeRef);
+        }
+
+        public static void SetGPSProcessingMethod(this Image image)
+        {
+            SetMetaDataItem(image, ExifTag.GPS_PROCESSING_METHOD, (short)TagTypes.ASCII, GetNullTerminatedString("GPS"));
         }
 
         public static double GetMetaDataDouble(this Image image, int id)
@@ -91,21 +130,21 @@ namespace takeout_merger_p
 
         private static void SetMetaDataItem(Image image, int id, short type, byte[] data)
         {
-            PropertyItem anyItem = image.PropertyItems[0];
-            anyItem.Id = id;
-            anyItem.Len = data.Length;
-            anyItem.Type = type;
-            anyItem.Value = data;
-            image.SetPropertyItem(anyItem);
+            PropertyItem property = image.PropertyItems[0];
+            property.Id = id;
+            property.Len = data.Length;
+            property.Type = type;
+            property.Value = data;
+            image.SetPropertyItem(property);
         }
 
-        private static byte[] GetPairUnsigned32Integer(double number)
+        private static byte[] GetNullTerminatedString(string? text)
         {
-            return BitConverter.GetBytes(number).ToArray();
-        }
+            if (string.IsNullOrEmpty(text))
+            {
+                return [0];
+            }
 
-        private static byte[] GetNullTerminatedString(string text)
-        {
             return Encoding.ASCII.GetBytes(text + "\0");
         }
     }

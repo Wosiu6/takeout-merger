@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "google-takeout-exif-fix": {
+    "TakeoutMerger": {
       "commandName": "Project",
       "commandLineArgs": "\"C:\\Workspace\\Takeout\" \"C:\\Workspace\\Out\""
     }

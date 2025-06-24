@@ -1,15 +1,17 @@
 ﻿#pragma warning disable CA1416 // Validate platform compatibility, only Win 6.1+
 
+using Microsoft.Extensions.Logging;
 using System.Drawing;
 using System.Drawing.Imaging;
+using TakeoutMerger.src.Common.Utils;
 
-namespace takeout_merger_p
+namespace TakeoutMerger.src.Core.Converters
 {
-    public class PngToTiffConverter
+    public class PngToTiffConverter(ILogger logger, string _outputPath) : LoggableBase(logger)
     {
-        public static string OutputPath { get; set; }
+        private readonly string __outputPath = _outputPath;
 
-        public static string Convert(string pngFilePath, CompressionMode compression)
+        public string Convert(string pngFilePath, CompressionMode compression)
         {
             return compression switch
             {
@@ -21,7 +23,7 @@ namespace takeout_merger_p
             };
         }
 
-        public static string ConvertPngToTiff_Uncompressed_Pat(string pngFilePath)
+        public string ConvertPngToTiff_Uncompressed_Pat(string pngFilePath)
         {
             var getBaseDir = Path.GetDirectoryName(pngFilePath);
             Bitmap bitmap = new Bitmap(pngFilePath);
@@ -32,14 +34,14 @@ namespace takeout_merger_p
             myEncoderParameters.Param[0] = myEncoderParameter;
 
             var nameWithNoExtension = Path.GetFileNameWithoutExtension(pngFilePath);
-            var newName = FileHandler.GetUniqueFileName($"{OutputPath}\\{nameWithNoExtension}.png.tiff");
+            var newName = FileUtils.GetUniqueFileName($"{__outputPath}\\{nameWithNoExtension}.png.tiff");
 
             bitmap.Save(newName, jgepEncoder, myEncoderParameters);
 
             return newName;
         }
 
-        public static string ConvertPngToTiff_Uncompressed(string pngFilePath)
+        public string ConvertPngToTiff_Uncompressed(string pngFilePath)
         {
             using (var bitmap = new Bitmap(pngFilePath))
             {
@@ -51,14 +53,14 @@ namespace takeout_merger_p
                     throw new NotSupportedException("TIFF encoder not available");
 
                 var nameWithNoExtension = Path.GetFileNameWithoutExtension(pngFilePath);
-                var newName = FileHandler.GetUniqueFileName($"{OutputPath}\\{nameWithNoExtension}.png.tiff");
+                var newName = FileUtils.GetUniqueFileName($"{_outputPath}\\{nameWithNoExtension}.png.tiff");
                 bitmap.Save(newName, tiffCodec, encoderParams);
 
                 return newName;
             }
         }
 
-        public static string ConvertPngToTiff_LZW(string pngFilePath)
+        public string ConvertPngToTiff_LZW(string pngFilePath)
         {
             using (var bitmap = new Bitmap(pngFilePath))
             {
@@ -70,14 +72,14 @@ namespace takeout_merger_p
                     throw new NotSupportedException("TIFF encoder not available");
 
                 var nameWithNoExtension = Path.GetFileNameWithoutExtension(pngFilePath);
-                var newName = FileHandler.GetUniqueFileName($"{OutputPath}\\{nameWithNoExtension}.png.tiff");
+                var newName = FileUtils.GetUniqueFileName($"{_outputPath}\\{nameWithNoExtension}.png.tiff");
                 bitmap.Save(newName, tiffCodec, encoderParams);
 
                 return newName;
             }
         }
 
-        public static string ConvertPngToTiff_Zip(string pngFilePath)
+        public string ConvertPngToTiff_Zip(string pngFilePath)
         {
             using (var bitmap = new Bitmap(pngFilePath))
             {
@@ -89,7 +91,7 @@ namespace takeout_merger_p
                     throw new NotSupportedException("TIFF encoder not available");
 
                 var nameWithNoExtension = Path.GetFileNameWithoutExtension(pngFilePath);
-                var newName = FileHandler.GetUniqueFileName($"{OutputPath}\\{nameWithNoExtension}.png.tiff");
+                var newName = FileUtils.GetUniqueFileName($"{_outputPath}\\{nameWithNoExtension}.png.tiff");
                 bitmap.Save(newName, tiffCodec, encoderParams);
 
                 return newName;

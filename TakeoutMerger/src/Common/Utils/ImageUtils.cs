@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using System.Drawing.Imaging;
 
-namespace takeout_merger_p
+namespace TakeoutMerger.src.Common.Utils
 {
     public static class ImageUtils
     {
@@ -15,14 +15,14 @@ namespace takeout_merger_p
                 throw new NotSupportedException("TIFF encoder not available");
 
             var nameWithNoExtension = Path.GetFileNameWithoutExtension(imagePath);
-            var newName = FileHandler.GetUniqueFileName($"{outputPath}\\{nameWithNoExtension}.png.tiff");
+            var newName = FileUtils.GetUniqueFileName($"{outputPath}\\{nameWithNoExtension}.png.tiff");
 
             image.Save(newName, tiffCodec, encoderParams);
 
             return newName;
         }
 
-        public static string SaveAsUncompressedExtension(this Image image, string imagePath, string outputPath)
+        public static string SaveAsUncompressedFile(this Image image, string imagePath, string outputPath)
         {
             var encoderParams = new EncoderParameters(1);
             encoderParams.Param[0] = new EncoderParameter(Encoder.Compression, (long)EncoderValue.CompressionNone);
@@ -31,11 +31,11 @@ namespace takeout_merger_p
 
             var codec = GetEncoder(GetMimeType(extension));
             if (codec == null)
-                throw new NotSupportedException("TIFF encoder not available");
+                throw new NotSupportedException($"{extension} encoder not available");
 
 
             var nameWithNoExtension = Path.GetFileNameWithoutExtension(imagePath);
-            var newName = FileHandler.GetUniqueFileName($"{outputPath}\\{nameWithNoExtension}{extension}");
+            var newName = FileUtils.GetUniqueFileName($"{outputPath}\\{nameWithNoExtension}{extension}");
 
             image.Save(newName, codec, encoderParams);
 
