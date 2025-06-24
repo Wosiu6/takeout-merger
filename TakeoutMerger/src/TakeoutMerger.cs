@@ -1,7 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Configuration;
-using System.Diagnostics.Metrics;
+﻿using Microsoft.Extensions.Logging;
 using TakeoutMerger.src.Common.Logging;
 using TakeoutMerger.src.Common.Utils;
 using TakeoutMerger.src.Core.Services;
@@ -15,45 +12,41 @@ namespace TakeoutMerger.src
 
         public void Start(string[] args)
         {
-#if DEBUG
-            string logFilePath = "console_log.txt";
-            using (StreamWriter logFileWriter = new(logFilePath, append: true))
+            string inputPath = args[0];
+            string outputPath = args[1];
+
+            if (string.IsNullOrEmpty(inputPath) || string.IsNullOrEmpty(outputPath))
             {
-#endif
-                ILogger logger = SetupLogger(logFileWriter);
-
-                if (args.Length < 1)
-                {
-                    logger.LogError("Insufficient parameters supplied.");
-                    logger.LogInformation("Usage: TakeoutMerger <directoryPath> <outputPath>");
-                    logger.LogInformation("Example: TakeoutMerger C:\\Downloads\\Takeout C:\\Downloads\\MyOutputFolder");
-                    return;
-                }
-
-                string inputPath = args[0];
-                string outputPath = args[1];
-
-                DirectoryUtils.EnsureWorkingDirectoryExists(inputPath, outputPath, logger);
-
-                var subDirectories = Directory.GetDirectories(inputPath, "*", SearchOption.AllDirectories);
-                _amountOfFolders = subDirectories.Count() + 1; // +1 for the top directory itself
-
-                List<Task> subDirectoryTasks = [];
-
-                foreach (var subDirectory in subDirectories)
-                {
-                    var task = ProcessFolder(logger, subDirectory, outputPath);
-
-                    subDirectoryTasks.Add(task);
-                }
-
-                var topDirectoryTask = ProcessFolder(logger, inputPath, outputPath, searchOption: SearchOption.TopDirectoryOnly);
-                subDirectoryTasks.Add(topDirectoryTask);
-
-                Task.WaitAll(subDirectoryTasks);
-#if DEBUG
+                var errorMessage = $"Input and output paths must be provided.\nUsage: TakeoutMerger <directoryPath> <outputPath>\nExample: TakeoutMerger C:\\Downloads\\Takeout C:\\Downloads\\MyOutputFolder";
+                throw new ArgumentException(errorMessage);
             }
+
+            DirectoryUtils.EnsureWorkingDirectoryExists(inputPath, outputPath);
+
+#if DEBUG
+            string logFilePath = $"{outputPath}\\console_log.txt";
+            using StreamWriter logFileWriter = new(logFilePath, append: true);
+            ILogger logger = SetupLogger(logFileWriter);
+#else
+            ILogger logger = SetupLogger();
 #endif
+
+            var subDirectories = Directory.GetDirectories(inputPath, "*", SearchOption.AllDirectories);
+            _amountOfFolders = subDirectories.Count() + 1; // +1 for the top directory itself
+
+            List<Task> subDirectoryTasks = [];
+
+            foreach (var subDirectory in subDirectories)
+            {
+                var task = ProcessFolder(logger, subDirectory, outputPath);
+
+                subDirectoryTasks.Add(task);
+            }
+
+            var topDirectoryTask = ProcessFolder(logger, inputPath, outputPath, searchOption: SearchOption.TopDirectoryOnly);
+            subDirectoryTasks.Add(topDirectoryTask);
+
+            Task.WaitAll(subDirectoryTasks);
         }
 
         private Task ProcessFolder(ILogger logger, string inputPath, string outputPath, SearchOption searchOption = SearchOption.AllDirectories)
@@ -86,11 +79,13 @@ namespace TakeoutMerger.src
             });
         }
 
-        private ILogger SetupLogger(StreamWriter logFileWriter)
+        private ILogger SetupLogger(StreamWriter? logFileWriter = null)
         {
             using ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
                 builder
-                .AddProvider(new CustomFileLoggerProvider(logFileWriter))
+#if DEBUG
+                .AddProvider(new CustomFileLoggerProvider(logFileWriter!))
+#endif
                 .AddSimpleConsole(options =>
                 {
                     options.IncludeScopes = true;

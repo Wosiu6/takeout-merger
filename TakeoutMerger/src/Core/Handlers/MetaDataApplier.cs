@@ -42,7 +42,7 @@ namespace TakeoutMerger.src.Core.Handlers
                 newFilePath = image.SaveAsUncompressedTiff(newName, outputPath);
             }
 
-            //ApplyFileData(newFilePath, metadata);
+            ApplyFileData(newFilePath, metadata);
 
             //delete old file
             File.Delete(imagePath);
@@ -75,7 +75,7 @@ namespace TakeoutMerger.src.Core.Handlers
                 newFilePath = image.SaveAsUncompressedFile(newName, outputPath);
             }
 
-            //ApplyFileData(newFilePath, metadata);
+            ApplyFileData(newFilePath, metadata);
 
             //delete old file
             File.Delete(imagePath);

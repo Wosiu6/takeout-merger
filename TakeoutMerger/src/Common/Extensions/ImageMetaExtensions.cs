@@ -61,7 +61,7 @@ namespace TakeoutMerger.src.Common.Extensions
 
         public static void SetGPSVersionId(this Image image)
         {
-            byte[] byteArrayBigEndianGPSVersionId = [0x02, 0x00, 0x00, 0x00];
+            byte[] byteArrayBigEndianGPSVersionId = [0x02, 0x02, 0x00, 0x00];
 
             SetMetaDataItem(image, ExifTag.GPS_VERSION_ID, (short)TagTypes.BYTE, byteArrayBigEndianGPSVersionId);
         }
