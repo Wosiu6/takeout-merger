@@ -11,6 +11,8 @@ namespace TakeoutMerger.src.Common.Extensions
         private const string _dateFormat = "yyyy:MM:dd";
         private const string _timeFormat = "HH:mm:ss";
 
+        private static readonly byte[] _exifVersion = [2, 3, 0, 0];
+
         public static void SetTitle(this Image image, string? text)
         {
             SetMetaDataItem(image, ExifTag.IMAGE_DESCRIPTION, (short)TagTypes.ASCII, GetNullTerminatedString(text));
@@ -61,29 +63,43 @@ namespace TakeoutMerger.src.Common.Extensions
 
         public static void SetGPSVersionId(this Image image)
         {
-            byte[] byteArrayBigEndianGPSVersionId = [0x02, 0x02, 0x00, 0x00];
-
-            SetMetaDataItem(image, ExifTag.GPS_VERSION_ID, (short)TagTypes.BYTE, byteArrayBigEndianGPSVersionId);
+            SetMetaDataItem(image, ExifTag.GPS_VERSION_ID, (short)TagTypes.BYTE, _exifVersion);
         }
 
-        public static void SetLatitude(this Image image, double latitude)
+        public static void SetGeoTags(this Image image, double latitude, double longitude, double altitude)
         {
-            SetMetaDataItem(image, ExifTag.GPS_LATITUDE, (short)TagTypes.RATIONAL, GetPairUnsigned32Integer(latitude));
-        }
+            string latHemisphere = "N";
+            if (latitude < 0)
+            {
+                latHemisphere = "S";
+                latitude = -latitude;
+            }
 
-        public static void SetLongitude(this Image image, double longitude)
-        {
-            SetMetaDataItem(image, ExifTag.GPS_LONGITUDE, (short)TagTypes.RATIONAL, GetPairUnsigned32Integer(longitude));
+            string lngHemisphere = "E";
+            if (longitude < 0)
+            {
+                lngHemisphere = "W";
+                longitude = -longitude;
+            }
+
+            byte[] altitudeRef = [0];
+            if (altitude < 0)
+            {
+                altitudeRef = [1];
+                altitude = -altitude;
+            }
+
+            SetMetaDataItem(image, ExifTag.GPS_LATITUDE, (short)TagTypes.RATIONAL, latitude.ConvertToRationalTriplet());
+            SetMetaDataItem(image, ExifTag.GPS_LATITUDE_REF, (short)TagTypes.ASCII, GetNullTerminatedString(latHemisphere));
+            SetMetaDataItem(image, ExifTag.GPS_LONGITUDE, (short)TagTypes.RATIONAL, longitude.ConvertToRationalTriplet());
+            SetMetaDataItem(image, ExifTag.GPS_LONGITUDE_REF, (short)TagTypes.ASCII, GetNullTerminatedString(lngHemisphere));
+            SetMetaDataItem(image, ExifTag.GPS_ALTITUDE, (short)TagTypes.RATIONAL, altitude.ConvertToRationalTriplet());
+            SetMetaDataItem(image, ExifTag.GPS_ALTITUDE_REF, (short)TagTypes.BYTE, altitudeRef);
         }
 
         public static void SetGPSProcessingMethod(this Image image)
         {
             SetMetaDataItem(image, ExifTag.GPS_PROCESSING_METHOD, (short)TagTypes.ASCII, GetNullTerminatedString("GPS"));
-        }
-
-        public static void SetAltitude(this Image image, double altitude)
-        {
-            SetMetaDataItem(image, ExifTag.GPS_ALTITUDE, (short)TagTypes.RATIONAL, GetPairUnsigned32Integer(altitude));
         }
 
         public static double GetMetaDataDouble(this Image image, int id)
@@ -114,17 +130,12 @@ namespace TakeoutMerger.src.Common.Extensions
 
         private static void SetMetaDataItem(Image image, int id, short type, byte[] data)
         {
-            PropertyItem anyItem = image.PropertyItems[0];
-            anyItem.Id = id;
-            anyItem.Len = data.Length;
-            anyItem.Type = type;
-            anyItem.Value = data;
-            image.SetPropertyItem(anyItem);
-        }
-
-        private static byte[] GetPairUnsigned32Integer(double number)
-        {
-            return BitConverter.GetBytes(number).ToArray();
+            PropertyItem property = image.PropertyItems[0];
+            property.Id = id;
+            property.Len = data.Length;
+            property.Type = type;
+            property.Value = data;
+            image.SetPropertyItem(property);
         }
 
         private static byte[] GetNullTerminatedString(string? text)

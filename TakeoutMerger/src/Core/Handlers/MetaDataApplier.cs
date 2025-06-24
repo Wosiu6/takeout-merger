@@ -35,8 +35,8 @@ namespace TakeoutMerger.src.Core.Handlers
 
             using (var image = Image.FromFile(imagePath))  //TODO: Swap to ImageSharp or similar for cross platform support
             {
-                ApplyGeoData(image, metadata);
-                ApplyDescriptiveData(image, metadata);
+                ApplyGeoData(image, metadata, imagePath);
+                ApplyDescriptiveData(image, metadata, imagePath);
                 ApplyMiscData(image, metadata, imagePath);
 
                 newFilePath = image.SaveAsUncompressedTiff(newName, outputPath);
@@ -68,8 +68,8 @@ namespace TakeoutMerger.src.Core.Handlers
 
             using (var image = Image.FromFile(imagePath))
             {
-                ApplyGeoData(image, metadata);
-                ApplyDescriptiveData(image, metadata);
+                ApplyGeoData(image, metadata, imagePath);
+                ApplyDescriptiveData(image, metadata, imagePath);
                 ApplyMiscData(image, metadata, imagePath);
 
                 newFilePath = image.SaveAsUncompressedFile(newName, outputPath);
@@ -126,43 +126,47 @@ namespace TakeoutMerger.src.Core.Handlers
             image.SetDateTimeGPS(photoTakenDateTime);
         }
 
-        private void ApplyDescriptiveData(Image image, GoogleEXIFDataDTO metadata)
+        private void ApplyDescriptiveData(Image image, GoogleEXIFDataDTO metadata, string imagePath)
         {
             if (image is null || metadata is null)
             {
                 return;
             }
 
+            var imageIdentifier = Path.GetFileName(imagePath);
+
             if (string.IsNullOrEmpty(image.GetMetaDataString(ExifTag.IMAGE_DESCRIPTION)))
             {
                 image.SetTitle(metadata.Title);
-                Logger.LogInformation($"Setting image title to: {metadata.Title} for image {image.Tag}.");
+                Logger.LogInformation($"Setting image title to: {metadata.Title} for image {imageIdentifier}.");
             }
 
             if (string.IsNullOrEmpty(image.GetMetaDataString(ExifTag.USER_COMMENT)))
             {
                 image.SetDescription(metadata.Description);
-                Logger.LogInformation($"Setting image description to: {metadata.Description} for image {image.Tag}.");
+                Logger.LogInformation($"Setting image description to: {metadata.Description} for image {imageIdentifier}.");
             }
 
             if (string.IsNullOrEmpty(image.GetMetaDataString(ExifTag.ARTIST)))
             {
                 image.SetAuthor(Environment.UserName);
-                Logger.LogInformation($"Setting image author to: {Environment.UserName} for image {image.Tag}.");
+                Logger.LogInformation($"Setting image author to: {Environment.UserName} for image {imageIdentifier}.");
             }
         }
 
-        private void ApplyGeoData(Image image, GoogleEXIFDataDTO metadata)
+        private void ApplyGeoData(Image image, GoogleEXIFDataDTO metadata, string imagePath)
         {
+            var imageIdentifier = Path.GetFileName(imagePath);
+
             if (HasValidGeoData(image))
             {
-                Logger.LogInformation($"Image {image.Tag} already has valid geo data, skipping.");
+                Logger.LogInformation($"Image {imageIdentifier} already has valid geo data, skipping.");
                 return;
             }
 
             if (metadata == null)
             {
-                Logger.LogWarning($"Metadata is null for image {image.Tag}, cannot apply geo data.");
+                Logger.LogWarning($"Metadata is null for image {imageIdentifier}, cannot apply geo data.");
                 return;
             }
 
@@ -174,37 +178,15 @@ namespace TakeoutMerger.src.Core.Handlers
 
             if (geoDataExif != null)
             {
-                if (geoDataExif.Altitude.HasValue)
-                {
-                    image.SetAltitude(geoDataExif.Altitude.Value);
-                }
-                if (geoDataExif.Longitude.HasValue)
-                {
-                    image.SetLongitude(geoDataExif.Longitude.Value);
-                }
-                if (geoDataExif.Latitude.HasValue)
-                {
-                    image.SetLatitude(geoDataExif.Latitude.Value);
-                }
+                image.SetGeoTags(geoDataExif.Latitude ?? 0, geoDataExif.Longitude ?? 0, geoDataExif.Altitude ?? 0);
             }
             else if (geoData != null)
             {
-                if (geoData.Altitude.HasValue)
-                {
-                    image.SetAltitude(geoData.Altitude.Value);
-                }
-                if (geoData.Longitude.HasValue)
-                {
-                    image.SetLongitude(geoData.Longitude.Value);
-                }
-                if (geoData.Latitude.HasValue)
-                {
-                    image.SetLatitude(geoData.Latitude.Value);
-                }
+                image.SetGeoTags(geoData.Latitude ?? 0, geoData.Longitude ?? 0, geoData.Altitude ?? 0);
             }
             else
             {
-                Logger.LogWarning($"No geo data available in metadata for image {image.Tag}.");
+                Logger.LogWarning($"No geo data available in metadata for image {imageIdentifier}.");
             }
         }
 
