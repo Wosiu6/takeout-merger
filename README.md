@@ -15,4 +15,9 @@ To run this you need to:
 - run the tool using `./TakeoutMerger.exe "C:\Workspace\Takeout" "C:\Workspace\Out"` as an example
 
 ### Disclaimer
-The implementation needs some work, it can be optimised and any Pull Request is welcome.
+The implementation needs some work, it can be optimised but for a couple thousand photos i tested it on it was fast enough.
+
+### To do
+- unit tests for public methods
+- options for different compressions/skipping png files (copying them as is with metadata loss) and/or adding and option to copy png files as is along their new tiff equivalents
+- replacing the  System.Drawing dependency with something cross platform (like ImageSharp) due to the usage of Windows GDI+ which is not cross platform
