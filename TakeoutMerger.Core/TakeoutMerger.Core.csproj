@@ -1,14 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\TakeoutMerger.ConsoleHost\TakeoutMerger.ConsoleHost.csproj" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.6" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+      <PackageReference Include="System.Drawing.Common" Version="9.0.8" />
     </ItemGroup>
 
 </Project>

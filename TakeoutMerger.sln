@@ -2,9 +2,23 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.13.35931.197
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TakeoutMerger", "TakeoutMerger\TakeoutMerger.csproj", "{6E460BF4-1CFC-9B7B-4926-1D592A7FC7D8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TakeoutMerger.Tests", "TakeoutMerger.Tests\TakeoutMerger.Tests.csproj", "{054ACF82-896D-4D4A-A9AD-290252F78AD3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TakeoutMergerTests", "TakeoutMergerTests\TakeoutMergerTests.csproj", "{054ACF82-896D-4D4A-A9AD-290252F78AD3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TakeoutMerger.Core", "TakeoutMerger.Core\TakeoutMerger.Core.csproj", "{F427C3F3-BE02-481E-AF4D-2A2ED9411026}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TakeoutMerger.Core", "TakeoutMerger.Core", "{AB459989-F778-4017-AE89-452B14BA872C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TakeoutMerger.Tests", "TakeoutMerger.Tests", "{39551BF6-633C-4373-9C16-CAFB81771CC4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TakeoutMerger.ConsoleHost", "TakeoutMerger.ConsoleHost", "{02640359-2686-4CA3-9395-21F74F742219}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{6259433E-8623-40A2-9CCC-305613D968F6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TakeoutMerger.ConsoleHost", "TakeoutMerger.ConsoleHost\TakeoutMerger.ConsoleHost.csproj", "{581E4E46-6F1B-400A-A0F5-4D7123E385E6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TakeoutMerger", "TakeoutMerger\TakeoutMerger.csproj", "{B47D404F-FA4F-438D-A031-66A7F84DC700}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TakeoutMerger", "TakeoutMerger", "{B929E397-4776-4386-9546-F0C20F84EEB1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -12,19 +26,37 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{6E460BF4-1CFC-9B7B-4926-1D592A7FC7D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6E460BF4-1CFC-9B7B-4926-1D592A7FC7D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6E460BF4-1CFC-9B7B-4926-1D592A7FC7D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6E460BF4-1CFC-9B7B-4926-1D592A7FC7D8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{054ACF82-896D-4D4A-A9AD-290252F78AD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{054ACF82-896D-4D4A-A9AD-290252F78AD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{054ACF82-896D-4D4A-A9AD-290252F78AD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{054ACF82-896D-4D4A-A9AD-290252F78AD3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F427C3F3-BE02-481E-AF4D-2A2ED9411026}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F427C3F3-BE02-481E-AF4D-2A2ED9411026}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F427C3F3-BE02-481E-AF4D-2A2ED9411026}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F427C3F3-BE02-481E-AF4D-2A2ED9411026}.Release|Any CPU.Build.0 = Release|Any CPU
+		{581E4E46-6F1B-400A-A0F5-4D7123E385E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{581E4E46-6F1B-400A-A0F5-4D7123E385E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{581E4E46-6F1B-400A-A0F5-4D7123E385E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{581E4E46-6F1B-400A-A0F5-4D7123E385E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B47D404F-FA4F-438D-A031-66A7F84DC700}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B47D404F-FA4F-438D-A031-66A7F84DC700}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B47D404F-FA4F-438D-A031-66A7F84DC700}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B47D404F-FA4F-438D-A031-66A7F84DC700}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F505BA3F-453F-46C1-8843-DC3FBA5AE02F}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F427C3F3-BE02-481E-AF4D-2A2ED9411026} = {AB459989-F778-4017-AE89-452B14BA872C}
+		{054ACF82-896D-4D4A-A9AD-290252F78AD3} = {39551BF6-633C-4373-9C16-CAFB81771CC4}
+		{02640359-2686-4CA3-9395-21F74F742219} = {6259433E-8623-40A2-9CCC-305613D968F6}
+		{AB459989-F778-4017-AE89-452B14BA872C} = {6259433E-8623-40A2-9CCC-305613D968F6}
+		{39551BF6-633C-4373-9C16-CAFB81771CC4} = {6259433E-8623-40A2-9CCC-305613D968F6}
+		{581E4E46-6F1B-400A-A0F5-4D7123E385E6} = {02640359-2686-4CA3-9395-21F74F742219}
+		{B929E397-4776-4386-9546-F0C20F84EEB1} = {6259433E-8623-40A2-9CCC-305613D968F6}
+		{B47D404F-FA4F-438D-A031-66A7F84DC700} = {B929E397-4776-4386-9546-F0C20F84EEB1}
 	EndGlobalSection
 EndGlobal
