@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "TakeoutMerger": {
-      "commandName": "Project",
-      "commandLineArgs": "\"C:\\Workspace\\Takeout\" \"C:\\Workspace\\Out\""
-    }
-  }
-}
