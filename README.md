@@ -12,10 +12,10 @@ Formats: .gif, .mp4, .mpeg, .dng and so on are not supported and are going to be
 ## Building/Running
 To run this you need to:
 - unzip Google Takeout into a folder
-- run the tool using `./TakeoutMerger.exe "C:\Workspace\Takeout" "C:\Workspace\Out"` as an example
+- run the tool using `.\TakeoutMerger "C:\Workspace\Takeout\Testing" "C:\Workspace\Takeout\TestingOutput"` as an example
 
-### Disclaimer
-The implementation needs some work, it can be optimised but for a couple thousand photos i tested it on it was fast enough.
+### Known Bugs
+- Datetime saved is sometimes confusing AM with PM Time
 
 ### To do
 - unit tests for public methods
