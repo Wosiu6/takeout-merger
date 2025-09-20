@@ -14,16 +14,18 @@ public class TakeoutMerger
     {
         if (args.Length < 2)
         {
-            var errorMessage = $"Input and output paths must be provided.\nUsage: TakeoutMerger <directoryPath> <outputPath>\nExample: TakeoutMerger C:\\Downloads\\Takeout C:\\Downloads\\MyOutputFolder";
+            var errorMessage =
+                $"Input and output paths must be provided.\nUsage: TakeoutMerger <directoryPath> <outputPath>\nExample: TakeoutMerger C:\\Downloads\\Takeout C:\\Downloads\\MyOutputFolder";
             throw new ArgumentException(errorMessage);
         }
-        
+
         string inputPath = args[0];
         string outputPath = args[1];
 
         if (string.IsNullOrEmpty(inputPath) || string.IsNullOrEmpty(outputPath))
         {
-            var errorMessage = $"Input and output paths must be provided.\nUsage: TakeoutMerger <directoryPath> <outputPath>\nExample: TakeoutMerger C:\\Downloads\\Takeout C:\\Downloads\\MyOutputFolder";
+            var errorMessage =
+                $"Input and output paths must be provided.\nUsage: TakeoutMerger <directoryPath> <outputPath>\nExample: TakeoutMerger C:\\Downloads\\Takeout C:\\Downloads\\MyOutputFolder";
             throw new ArgumentException(errorMessage);
         }
 
@@ -49,43 +51,42 @@ public class TakeoutMerger
             subDirectoryTasks.Add(task);
         }
 
-        var topDirectoryTask = ProcessFolder(logger, inputPath, outputPath, searchOption: SearchOption.TopDirectoryOnly);
+        var topDirectoryTask =
+            ProcessFolder(logger, inputPath, outputPath, searchOption: SearchOption.TopDirectoryOnly);
         subDirectoryTasks.Add(topDirectoryTask);
 
         Task.WaitAll(subDirectoryTasks);
     }
 
-    private Task ProcessFolder(ILogger logger, string inputPath, string outputPath, SearchOption searchOption = SearchOption.AllDirectories)
+    private async Task ProcessFolder(ILogger logger, string inputPath, string outputPath,
+        SearchOption searchOption = SearchOption.AllDirectories)
     {
-        return Task.Run(() =>
+        try
         {
-            try
-            {
-                logger.LogInformation($"Processing folder: {inputPath}");
+            logger.LogInformation($"Processing folder: {inputPath}");
 
-                JsonService jsonService = new(logger, inputPath, outputPath, searchOption);
-                jsonService.Process();
+            JsonService jsonService = new(logger, inputPath, outputPath, searchOption);
+            await jsonService.ProcessAsync();
 
-                PngService pngService = new(logger, inputPath, outputPath, searchOption);
-                pngService.Process();
+            PngService pngService = new(logger, inputPath, outputPath, searchOption);
+            pngService.ProcessAsync();
 
-                TagImageService tagImageService = new(logger, inputPath, outputPath, searchOption);
-                tagImageService.Process();
+            TagImageService tagImageService = new(logger, inputPath, outputPath, searchOption);
+            tagImageService.ProcessAsync();
 
-                UnsuportedFilesService unsuportedFilesService = new(logger, inputPath, outputPath, searchOption);
-                unsuportedFilesService.Process();
+            UnsuportedFilesService unsuportedFilesService = new(logger, inputPath, outputPath, searchOption);
+            unsuportedFilesService.ProcessAsync();
 
-                Interlocked.Increment(ref _counter);
-                logger.LogCritical($"Progress: {_counter}/{_amountOfFolders}.");
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, $"Error processing folder: {inputPath}");
-            }
-        });
+            Interlocked.Increment(ref _counter);
+            logger.LogCritical($"Progress: {_counter}/{_amountOfFolders}.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, $"Error processing folder: {inputPath}");
+        }
     }
 
-    private ILogger SetupLogger(StreamWriter? logFileWriter = null)
+    private static ILogger SetupLogger(StreamWriter? logFileWriter = null)
     {
         using ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
             builder

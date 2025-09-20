@@ -12,7 +12,7 @@ public class UnsuportedFilesService(ILogger logger, string inputPath, string out
     private readonly string _outputPath = outputPath;
     private readonly SearchOption _searchOption = searchOption;
 
-    public void Process()
+    public async Task ProcessAsync()
     {
         IFileService fileService = new FileService(Logger);
         List<string> foundUnsuportedPaths = fileService.GetFilesByExtensions(_inputPath, [".tiff", ".jpg", ".jpeg", ".png", ".json"], excludeExtensions: true, searchOption: _searchOption);
@@ -38,7 +38,7 @@ public class UnsuportedFilesService(ILogger logger, string inputPath, string out
 
             File.Copy(foundUnsuportedPath, newPath);
 
-            Logger.LogInformation("Copying movies {0}/{1}: {2}",
+            Logger.LogInformation("Copying original files {0}/{1}: {2}",
                 ++currentProgress, foundUnsuportedPaths.Count, foundUnsuportedPath);
         }
     }

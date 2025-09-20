@@ -44,7 +44,7 @@ public class FileService(ILogger logger) : LoggableBase(logger), IFileService
             }
         }
 
-        Logger.LogInformation("Found {FileCount} files; extensions: {Extensions}", filesList.Count, string.Join(",", extensions));
+        Logger.LogInformation("Found {FileCount} files; extensions: {Extensions} in {Path}", filesList.Count, string.Join(",", extensions), directoryPath);
         return filesList;
     }
 

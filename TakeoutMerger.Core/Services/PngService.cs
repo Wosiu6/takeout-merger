@@ -13,7 +13,7 @@ public class PngService(ILogger logger, string inputPath, string outputPath, Sea
     private readonly string _outputPath = outputPath;
     private readonly SearchOption _searchOption = searchOption;
 
-    public void Process()
+    public async Task ProcessAsync()
     {
         IFileService fileService = new FileService(Logger);
         List<string> foundPngPaths = fileService.GetFilesByExtensions(_inputPath, [".png"], searchOption: _searchOption);
@@ -33,8 +33,6 @@ public class PngService(ILogger logger, string inputPath, string outputPath, Sea
         foreach (var pngTakeoutPair in pngTakeoutPairs)
         {
             var newPath = new PngToTiffConverter(Logger, _outputPath).Convert(pngTakeoutPair.Key, CompressionMode.None);
-
-            var newNameNoExtension = Path.GetFileNameWithoutExtension(newPath);
 
             metaDataApplier.ApplyJsonMetaDataToPng(newPath, pngTakeoutPair.Value, _outputPath);
 

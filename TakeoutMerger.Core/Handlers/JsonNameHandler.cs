@@ -6,30 +6,38 @@ namespace TakeoutMerger.Core.Handlers;
 
 public interface IJsonNameHandler
 {
-    string GenerateNewJsonFile(string originalJsonPath, string outputPath);
+    Task<string> GenerateNewJsonFileAsync(string originalJsonPath, string outputPath);
 }
-public class JsonNameHandler(ILogger logger) : LoggableBase(logger), IJsonNameHandler
-{
-    private static readonly string _supplementedMetadataRegxString = @"^*.sup(p(l(e(m(e(n(t(a(l(-(m(e(t(a(d(a(t(a)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?.*\.json$";
-    private const string _jsonExtension = ".json";
-    private static readonly Regex _supplementedMetadataRegx = new(_supplementedMetadataRegxString, RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-    public string GenerateNewJsonFile(string originalJsonPath, string outputPath)
+public partial class JsonNameHandler(ILogger logger) : LoggableBase(logger), IJsonNameHandler
+{
+    private const string _supplementedMetadataRegxString =
+        @"^*.sup(p(l(e(m(e(n(t(a(l(-(m(e(t(a(d(a(t(a)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?.*\.json$";
+
+    private const string _jsonExtension = ".json";
+    private static readonly Regex _supplementedMetadataRegex = SupplementedMetadataRegex();
+    
+    public async Task<string> GenerateNewJsonFileAsync(string originalJsonPath, string outputPath)
     {
         if (string.IsNullOrEmpty(originalJsonPath) || !File.Exists(originalJsonPath))
         {
             throw new ArgumentException("Invalid JSON file path provided.");
         }
 
-        var onlyOriginalNameWithExtension = Path.GetFileName(originalJsonPath);
+        var newJsonPath = _supplementedMetadataRegex.Replace(originalJsonPath, _jsonExtension);
 
-        var newJsonPath = _supplementedMetadataRegx.Replace(originalJsonPath, _jsonExtension);
-
-        if (!File.Exists(newJsonPath))
+        if (File.Exists(newJsonPath))
         {
-            File.Copy(originalJsonPath, newJsonPath, true);
+            return newJsonPath;
         }
-
+        
+        await using FileStream newStream = File.Create(newJsonPath);
+        await using FileStream originalStream = File.Open(originalJsonPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        await originalStream.CopyToAsync(newStream);
+        
         return newJsonPath;
     }
+
+    [GeneratedRegex(_supplementedMetadataRegxString, RegexOptions.IgnoreCase | RegexOptions.Compiled, "en-GB")]
+    private static partial Regex SupplementedMetadataRegex();
 }

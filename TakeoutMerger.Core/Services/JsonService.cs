@@ -5,13 +5,17 @@ using TakeoutMerger.Core.Services.Interfaces;
 
 namespace TakeoutMerger.Core.Services;
 
-public class JsonService(ILogger logger, string inputPath, string outputPath, SearchOption searchOption = SearchOption.AllDirectories) : LoggableBase(logger), IFileTypeProcessService
+public class JsonService(
+    ILogger logger,
+    string inputPath,
+    string outputPath,
+    SearchOption searchOption = SearchOption.AllDirectories) : LoggableBase(logger), IFileTypeProcessService
 {
     private readonly string _inputPath = inputPath;
     private readonly string _outputPath = outputPath;
     private readonly SearchOption _searchOption = searchOption;
 
-    public void Process()
+    public async Task ProcessAsync()
     {
         Logger.LogInformation("Processing JSON files int {InputPath}", _inputPath);
 
@@ -24,18 +28,21 @@ public class JsonService(ILogger logger, string inputPath, string outputPath, Se
             return;
         }
 
-        JsonNameHandler jsonNameHandler = new (Logger);
+        JsonNameHandler jsonNameHandler = new(Logger);
 
         int currentProgress = 0;
 
         foreach (string foundJsonName in foundJsons)
         {
-            string newJsonFile = jsonNameHandler.GenerateNewJsonFile(foundJsonName, _outputPath);
+            var newName = await jsonNameHandler.GenerateNewJsonFileAsync(foundJsonName, _outputPath);
 
-            File.Delete(foundJsonName);
+            if (File.Exists(foundJsonName))
+            {
+                File.Delete(foundJsonName);
+            }
 
             Logger.LogInformation("Generating new json {CurrentProgress}/{FoundJsonsCount}: {FoundJsonName}",
-                ++currentProgress, foundJsons.Count, foundJsonName);
+                ++currentProgress, foundJsons.Count, newName);
         }
     }
 }

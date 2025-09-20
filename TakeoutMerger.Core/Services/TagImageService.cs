@@ -12,7 +12,7 @@ public class TagImageService(ILogger logger, string inputPath, string outputPath
     private readonly string _outputPath = outputPath;
     private readonly SearchOption _searchOption = searchOption;
 
-    public void Process()
+    public async Task ProcessAsync()
     {
         IFileService fileService = new FileService(Logger);
         List<string> foundTagTypesPaths = fileService.GetFilesByExtensions(_inputPath, [".tiff", ".jpg", ".jpeg"], _searchOption);
