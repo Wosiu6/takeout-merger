@@ -119,7 +119,7 @@ public class JsonNameHandlerTests : IDisposable
         var cleanedPath = Path.Combine(_testDirectory, "test.json");
 
         File.WriteAllText(originalPath, "{\"original\": true}");
-        File.WriteAllText(cleanedPath, "{\"existing\": true}");
+        File.WriteAllText(cleanedPath, "{\"cleaned\": true}");
 
         // Act
         var result = await _handler.GenerateNewJsonFileAsync(originalPath, "output");
@@ -128,7 +128,7 @@ public class JsonNameHandlerTests : IDisposable
         result.Should().Be(cleanedPath);
         File.Exists(result).Should().BeTrue();
         var content = File.ReadAllText(result);
-        content.Should().Be("{\"original\": true}");
+        content.Should().Be("{\"cleaned\": true}");
     }
 
     [Fact]

@@ -10,7 +10,7 @@ public class TakeoutMerger
     private int _counter = 0;
     private int _amountOfFolders = 0;
 
-    public void Start(string[] args)
+    public async Task Start(string[] args)
     {
         if (args.Length < 2)
         {
@@ -40,25 +40,25 @@ public class TakeoutMerger
 #endif
 
         var subDirectories = Directory.GetDirectories(inputPath, "*", SearchOption.AllDirectories);
-        _amountOfFolders = subDirectories.Count() + 1; // +1 for the top directory itself
+        _amountOfFolders = subDirectories.Length + 1; // +1 for the top directory itself
 
         List<Task> subDirectoryTasks = [];
 
         foreach (var subDirectory in subDirectories)
         {
-            var task = ProcessFolder(logger, subDirectory, outputPath);
+            var task = ProcessFolderAsync(logger, subDirectory, outputPath);
 
             subDirectoryTasks.Add(task);
         }
 
         var topDirectoryTask =
-            ProcessFolder(logger, inputPath, outputPath, searchOption: SearchOption.TopDirectoryOnly);
+            ProcessFolderAsync(logger, inputPath, outputPath, searchOption: SearchOption.TopDirectoryOnly);
         subDirectoryTasks.Add(topDirectoryTask);
 
-        Task.WaitAll(subDirectoryTasks);
+        await Task.WhenAll(subDirectoryTasks);
     }
 
-    private async Task ProcessFolder(ILogger logger, string inputPath, string outputPath,
+    private async Task ProcessFolderAsync(ILogger logger, string inputPath, string outputPath,
         SearchOption searchOption = SearchOption.AllDirectories)
     {
         try
@@ -69,13 +69,13 @@ public class TakeoutMerger
             await jsonService.ProcessAsync();
 
             PngService pngService = new(logger, inputPath, outputPath, searchOption);
-            pngService.ProcessAsync();
+            await pngService.ProcessAsync();
 
             TagImageService tagImageService = new(logger, inputPath, outputPath, searchOption);
-            tagImageService.ProcessAsync();
+            await tagImageService.ProcessAsync();
 
             UnsuportedFilesService unsuportedFilesService = new(logger, inputPath, outputPath, searchOption);
-            unsuportedFilesService.ProcessAsync();
+            await unsuportedFilesService.ProcessAsync();
 
             Interlocked.Increment(ref _counter);
             logger.LogCritical($"Progress: {_counter}/{_amountOfFolders}.");
