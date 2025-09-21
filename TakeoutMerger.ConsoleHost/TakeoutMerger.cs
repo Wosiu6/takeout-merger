@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Runtime.ExceptionServices;
+using Microsoft.Extensions.Logging;
 using TakeoutMerger.Core.Common.Logging;
 using TakeoutMerger.Core.Common.Utils;
 using TakeoutMerger.Core.Services;
@@ -10,20 +11,22 @@ public class TakeoutMerger
     private int _counter = 0;
     private int _amountOfFolders = 0;
 
-    public void Start(string[] args)
+    public async Task Start(string[] args)
     {
         if (args.Length < 2)
         {
-            var errorMessage = $"Input and output paths must be provided.\nUsage: TakeoutMerger <directoryPath> <outputPath>\nExample: TakeoutMerger C:\\Downloads\\Takeout C:\\Downloads\\MyOutputFolder";
+            var errorMessage =
+                $"Input and output paths must be provided.\nUsage: TakeoutMerger <directoryPath> <outputPath>\nExample: TakeoutMerger C:\\Downloads\\Takeout C:\\Downloads\\MyOutputFolder";
             throw new ArgumentException(errorMessage);
         }
-        
+
         string inputPath = args[0];
         string outputPath = args[1];
 
         if (string.IsNullOrEmpty(inputPath) || string.IsNullOrEmpty(outputPath))
         {
-            var errorMessage = $"Input and output paths must be provided.\nUsage: TakeoutMerger <directoryPath> <outputPath>\nExample: TakeoutMerger C:\\Downloads\\Takeout C:\\Downloads\\MyOutputFolder";
+            var errorMessage =
+                $"Input and output paths must be provided.\nUsage: TakeoutMerger <directoryPath> <outputPath>\nExample: TakeoutMerger C:\\Downloads\\Takeout C:\\Downloads\\MyOutputFolder";
             throw new ArgumentException(errorMessage);
         }
 
@@ -36,56 +39,58 @@ public class TakeoutMerger
 #else
             ILogger logger = SetupLogger();
 #endif
-
+        SetupFirstChanceException(logger);
+        
         var subDirectories = Directory.GetDirectories(inputPath, "*", SearchOption.AllDirectories);
-        _amountOfFolders = subDirectories.Count() + 1; // +1 for the top directory itself
+        _amountOfFolders = subDirectories.Length + 1; // +1 for the top directory itself
 
         List<Task> subDirectoryTasks = [];
 
         foreach (var subDirectory in subDirectories)
         {
-            var task = ProcessFolder(logger, subDirectory, outputPath);
+            var task = ProcessFolderAsync(logger, subDirectory, outputPath);
 
             subDirectoryTasks.Add(task);
         }
 
-        var topDirectoryTask = ProcessFolder(logger, inputPath, outputPath, searchOption: SearchOption.TopDirectoryOnly);
+        var topDirectoryTask =
+            ProcessFolderAsync(logger, inputPath, outputPath, searchOption: SearchOption.TopDirectoryOnly);
         subDirectoryTasks.Add(topDirectoryTask);
 
-        Task.WaitAll(subDirectoryTasks);
+        await Task.WhenAll(subDirectoryTasks);
+        
+        logger.LogInformation("Takeout Merger concluded successfully, processed: {AmountOfFiles} folders", _amountOfFolders);
     }
 
-    private Task ProcessFolder(ILogger logger, string inputPath, string outputPath, SearchOption searchOption = SearchOption.AllDirectories)
+    private async Task ProcessFolderAsync(ILogger logger, string inputPath, string outputPath,
+        SearchOption searchOption = SearchOption.AllDirectories)
     {
-        return Task.Run(() =>
+        try
         {
-            try
-            {
-                logger.LogInformation($"Processing folder: {inputPath}");
+            logger.LogInformation($"Processing folder: {inputPath}");
 
-                JsonService jsonService = new(logger, inputPath, outputPath, searchOption);
-                jsonService.Process();
+            JsonService jsonService = new(logger, inputPath, outputPath, searchOption);
+            await jsonService.ProcessAsync();
 
-                PngService pngService = new(logger, inputPath, outputPath, searchOption);
-                pngService.Process();
+            PngService pngService = new(logger, inputPath, outputPath, searchOption);
+            await pngService.ProcessAsync();
 
-                TagImageService tagImageService = new(logger, inputPath, outputPath, searchOption);
-                tagImageService.Process();
+            TagImageService tagImageService = new(logger, inputPath, outputPath, searchOption);
+            await tagImageService.ProcessAsync();
 
-                UnsuportedFilesService unsuportedFilesService = new(logger, inputPath, outputPath, searchOption);
-                unsuportedFilesService.Process();
+            NonExifFilesService nonExifFilesService = new(logger, inputPath, outputPath, searchOption);
+            await nonExifFilesService.ProcessAsync();
 
-                Interlocked.Increment(ref _counter);
-                logger.LogCritical($"Progress: {_counter}/{_amountOfFolders}.");
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, $"Error processing folder: {inputPath}");
-            }
-        });
+            Interlocked.Increment(ref _counter);
+            logger.LogCritical($"Progress: {_counter}/{_amountOfFolders}.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, $"Error processing folder: {inputPath}");
+        }
     }
 
-    private ILogger SetupLogger(StreamWriter? logFileWriter = null)
+    private static ILogger SetupLogger(StreamWriter? logFileWriter = null)
     {
         using ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
             builder
@@ -100,5 +105,15 @@ public class TakeoutMerger
                 }));
 
         return loggerFactory.CreateLogger("TakeoutMerger");
+    }
+
+    private static void SetupFirstChanceException(ILogger logger)
+    {
+        AppDomain.CurrentDomain.FirstChanceException += FirstChanceHandler;
+        
+        void FirstChanceHandler(object source, FirstChanceExceptionEventArgs e)
+        {
+            logger.LogError("FirstChanceException: {ExceptionDetails}", e.Exception);
+        }
     }
 }

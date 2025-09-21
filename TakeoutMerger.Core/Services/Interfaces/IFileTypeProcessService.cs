@@ -2,5 +2,5 @@
 
 public interface IFileTypeProcessService
 {
-    void Process();
+    Task ProcessAsync();
 }

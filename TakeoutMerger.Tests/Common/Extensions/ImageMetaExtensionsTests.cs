@@ -12,7 +12,7 @@ public class ImageMetaExtensionsTests
     
 
     // Helper method to get a PropertyItem by ID for assertion
-    private PropertyItem? GetPropertyItem(Image image, int id)
+    private static PropertyItem? GetPropertyItem(Image image, int id)
     {
         return image.PropertyItems.FirstOrDefault(p => p.Id == id);
     }
@@ -237,7 +237,7 @@ public class ImageMetaExtensionsTests
         Encoding.ASCII.GetString(propertyItem.Value).TrimEnd('\0').Should().Be(expectedMethod);
     }
     
-    private Image CreateDummyImage()
+    private static Image CreateDummyImage()
     {
         var bitmap = new Bitmap(1, 1);
         var propertyItem = (PropertyItem)Activator.CreateInstance(typeof(PropertyItem), true)!;

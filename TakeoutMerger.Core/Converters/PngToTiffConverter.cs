@@ -35,7 +35,7 @@ public class PngToTiffConverter(ILogger logger, string _outputPath) : LoggableBa
         myEncoderParameters.Param[0] = myEncoderParameter;
 
         var nameWithNoExtension = Path.GetFileNameWithoutExtension(pngFilePath);
-        var newName = FileUtils.GetUniqueFileName($"{__outputPath}\\{nameWithNoExtension}.png.tiff");
+        var newName = FileUtils.GetUniqueFilePath($"{__outputPath}\\{nameWithNoExtension}.png.tiff");
 
         bitmap.Save(newName, jgepEncoder, myEncoderParameters);
 
@@ -54,7 +54,7 @@ public class PngToTiffConverter(ILogger logger, string _outputPath) : LoggableBa
                 throw new NotSupportedException("TIFF encoder not available");
 
             var nameWithNoExtension = Path.GetFileNameWithoutExtension(pngFilePath);
-            var newName = FileUtils.GetUniqueFileName($"{_outputPath}\\{nameWithNoExtension}.png.tiff");
+            var newName = FileUtils.GetUniqueFilePath($"{_outputPath}\\{nameWithNoExtension}.png.tiff");
             bitmap.Save(newName, tiffCodec, encoderParams);
 
             return newName;
@@ -73,7 +73,7 @@ public class PngToTiffConverter(ILogger logger, string _outputPath) : LoggableBa
                 throw new NotSupportedException("TIFF encoder not available");
 
             var nameWithNoExtension = Path.GetFileNameWithoutExtension(pngFilePath);
-            var newName = FileUtils.GetUniqueFileName($"{_outputPath}\\{nameWithNoExtension}.png.tiff");
+            var newName = FileUtils.GetUniqueFilePath($"{_outputPath}\\{nameWithNoExtension}.png.tiff");
             bitmap.Save(newName, tiffCodec, encoderParams);
 
             return newName;
@@ -92,7 +92,7 @@ public class PngToTiffConverter(ILogger logger, string _outputPath) : LoggableBa
                 throw new NotSupportedException("TIFF encoder not available");
 
             var nameWithNoExtension = Path.GetFileNameWithoutExtension(pngFilePath);
-            var newName = FileUtils.GetUniqueFileName($"{_outputPath}\\{nameWithNoExtension}.png.tiff");
+            var newName = FileUtils.GetUniqueFilePath($"{_outputPath}\\{nameWithNoExtension}.png.tiff");
             bitmap.Save(newName, tiffCodec, encoderParams);
 
             return newName;
