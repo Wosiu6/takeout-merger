@@ -1,1 +1,1 @@
-﻿new TakeoutMerger.ConsoleHost.TakeoutMerger().Start(args);
+﻿await new TakeoutMerger.ConsoleHost.TakeoutMerger().StartAsync(args);

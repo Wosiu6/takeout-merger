@@ -11,7 +11,7 @@ public class TakeoutMerger
     private int _counter = 0;
     private int _amountOfFolders = 0;
 
-    public async Task Start(string[] args)
+    public async Task StartAsync(string[] args)
     {
         if (args.Length < 2)
         {
@@ -111,7 +111,7 @@ public class TakeoutMerger
     {
         AppDomain.CurrentDomain.FirstChanceException += FirstChanceHandler;
         
-        void FirstChanceHandler(object source, FirstChanceExceptionEventArgs e)
+        void FirstChanceHandler(object? source, FirstChanceExceptionEventArgs e)
         {
             logger.LogError("FirstChanceException: {ExceptionDetails}", e.Exception);
         }
