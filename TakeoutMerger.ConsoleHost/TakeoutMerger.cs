@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Runtime.ExceptionServices;
+using Microsoft.Extensions.Logging;
 using TakeoutMerger.Core.Common.Logging;
 using TakeoutMerger.Core.Common.Utils;
 using TakeoutMerger.Core.Services;
@@ -38,7 +39,8 @@ public class TakeoutMerger
 #else
             ILogger logger = SetupLogger();
 #endif
-
+        SetupFirstChanceException(logger);
+        
         var subDirectories = Directory.GetDirectories(inputPath, "*", SearchOption.AllDirectories);
         _amountOfFolders = subDirectories.Length + 1; // +1 for the top directory itself
 
@@ -56,6 +58,8 @@ public class TakeoutMerger
         subDirectoryTasks.Add(topDirectoryTask);
 
         await Task.WhenAll(subDirectoryTasks);
+        
+        logger.LogInformation("Takeout Merger concluded successfully, processed: {AmountOfFiles} folders", _amountOfFolders);
     }
 
     private async Task ProcessFolderAsync(ILogger logger, string inputPath, string outputPath,
@@ -74,8 +78,8 @@ public class TakeoutMerger
             TagImageService tagImageService = new(logger, inputPath, outputPath, searchOption);
             await tagImageService.ProcessAsync();
 
-            UnsuportedFilesService unsuportedFilesService = new(logger, inputPath, outputPath, searchOption);
-            await unsuportedFilesService.ProcessAsync();
+            NonExifFilesService nonExifFilesService = new(logger, inputPath, outputPath, searchOption);
+            await nonExifFilesService.ProcessAsync();
 
             Interlocked.Increment(ref _counter);
             logger.LogCritical($"Progress: {_counter}/{_amountOfFolders}.");
@@ -101,5 +105,15 @@ public class TakeoutMerger
                 }));
 
         return loggerFactory.CreateLogger("TakeoutMerger");
+    }
+
+    private static void SetupFirstChanceException(ILogger logger)
+    {
+        AppDomain.CurrentDomain.FirstChanceException += FirstChanceHandler;
+        
+        void FirstChanceHandler(object source, FirstChanceExceptionEventArgs e)
+        {
+            logger.LogError("FirstChanceException: {ExceptionDetails}", e.Exception);
+        }
     }
 }

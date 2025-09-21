@@ -34,11 +34,14 @@ public class TagImageService(ILogger logger, string inputPath, string outputPath
             var fileNameNoExt = Path.GetFileNameWithoutExtension(foundTagTypesTakeoutPair.Key);
             var fileExtension = Path.GetExtension(foundTagTypesTakeoutPair.Key);
 
-            var newPath = FileUtils.GetUniqueFileName($"{_outputPath}\\{fileNameNoExt}{fileExtension}");
-            File.Copy(foundTagTypesTakeoutPair.Key, newPath);
+            var newPath = FileUtils.GetUniqueFilePath($"{_outputPath}\\{fileNameNoExt}{fileExtension}");
 
+            File.Copy(foundTagTypesTakeoutPair.Key, newPath, true);
+            
             metaDataApplier.ApplyJsonMetaDataToTagImage(newPath, foundTagTypesTakeoutPair.Value, _outputPath);
 
+            File.Delete(foundTagTypesTakeoutPair.Key);
+            
             Logger.LogInformation("Applying Json to Tags {CurrentProgress}/{TagTypeCount}: {Key}",
                 ++currentProgress, foundTagTypesTakeoutPairs.Count, foundTagTypesTakeoutPair.Key);
         }

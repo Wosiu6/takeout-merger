@@ -7,7 +7,11 @@ using TakeoutMerger.Core.Services.Interfaces;
 
 namespace TakeoutMerger.Core.Services;
 
-public class PngService(ILogger logger, string inputPath, string outputPath, SearchOption searchOption = SearchOption.AllDirectories) : LoggableBase(logger), IFileTypeProcessService
+public class PngService(
+    ILogger logger,
+    string inputPath,
+    string outputPath,
+    SearchOption searchOption = SearchOption.AllDirectories) : LoggableBase(logger), IFileTypeProcessService
 {
     private readonly string _inputPath = inputPath;
     private readonly string _outputPath = outputPath;
@@ -16,7 +20,8 @@ public class PngService(ILogger logger, string inputPath, string outputPath, Sea
     public async Task ProcessAsync()
     {
         IFileService fileService = new FileService(Logger);
-        List<string> foundPngPaths = fileService.GetFilesByExtensions(_inputPath, [".png"], searchOption: _searchOption);
+        List<string> foundPngPaths =
+            fileService.GetFilesByExtensions(_inputPath, [".png"], searchOption: _searchOption);
 
         if (foundPngPaths.Count == 0)
         {
@@ -24,7 +29,8 @@ public class PngService(ILogger logger, string inputPath, string outputPath, Sea
             return;
         }
 
-        IDictionary<string, string> pngTakeoutPairs = fileService.GetFileDataMatches(_inputPath, foundPngPaths).ToFrozenDictionary();
+        IDictionary<string, string> pngTakeoutPairs =
+            fileService.GetFileDataMatches(_inputPath, foundPngPaths).ToFrozenDictionary();
 
         IMetaDataApplier metaDataApplier = new MetaDataApplier(Logger);
 
@@ -32,9 +38,14 @@ public class PngService(ILogger logger, string inputPath, string outputPath, Sea
 
         foreach (var pngTakeoutPair in pngTakeoutPairs)
         {
-            var newPath = new PngToTiffConverter(Logger, _outputPath).Convert(pngTakeoutPair.Key, CompressionMode.None);
+            var tiffPath =
+                new PngToTiffConverter(Logger, _outputPath).Convert(pngTakeoutPair.Key, CompressionMode.None);
+            var pngPath = tiffPath + ".png";
 
-            metaDataApplier.ApplyJsonMetaDataToPng(newPath, pngTakeoutPair.Value, _outputPath);
+            File.Copy(pngTakeoutPair.Key, pngPath);
+
+            metaDataApplier.ApplyJsonMetaDataToPng(tiffPath: tiffPath, pngPath: pngPath, jsonPath: pngTakeoutPair.Value,
+                outputPath: _outputPath);
 
             Logger.LogInformation("Applying Json to PNGs {CurrentProgress}/{PngPairCount}: {Key}",
                 ++currentProgress, pngTakeoutPairs.Count, pngTakeoutPair.Key);

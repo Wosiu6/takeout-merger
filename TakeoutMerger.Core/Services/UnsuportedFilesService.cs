@@ -6,7 +6,7 @@ using TakeoutMerger.Core.Services.Interfaces;
 
 namespace TakeoutMerger.Core.Services;
 
-public class UnsuportedFilesService(ILogger logger, string inputPath, string outputPath, SearchOption searchOption = SearchOption.AllDirectories) : LoggableBase(logger), IFileTypeProcessService
+public class NonExifFilesService(ILogger logger, string inputPath, string outputPath, SearchOption searchOption = SearchOption.AllDirectories) : LoggableBase(logger), IFileTypeProcessService
 {
     private readonly string _inputPath = inputPath;
     private readonly string _outputPath = outputPath;
@@ -15,31 +15,36 @@ public class UnsuportedFilesService(ILogger logger, string inputPath, string out
     public async Task ProcessAsync()
     {
         IFileService fileService = new FileService(Logger);
-        List<string> foundUnsuportedPaths = fileService.GetFilesByExtensions(_inputPath, [".tiff", ".jpg", ".jpeg", ".png", ".json"], excludeExtensions: true, searchOption: _searchOption);
+        List<string> foundNonExifPaths = fileService.GetFilesByExtensions(_inputPath, [".tiff", ".jpg", ".jpeg", ".png", ".json"], excludeExtensions: true, searchOption: _searchOption);
 
-        if (foundUnsuportedPaths.Count == 0)
+        if (foundNonExifPaths.Count == 0)
         {
-            Logger.LogWarning("No unsupported files found in the specified directory.");
+            Logger.LogWarning("No nonExif files found in the specified directory.");
             return;
         }
 
-        Dictionary<string, string>? foundTagTypesTakeoutPairs = fileService.GetFileDataMatches(_inputPath, foundUnsuportedPaths);
+        Dictionary<string, string>? foundTagTypesTakeoutPairs = fileService.GetFileDataMatches(_inputPath, foundNonExifPaths);
 
         IMetaDataApplier metaDataApplier = new MetaDataApplier(Logger);
 
         int currentProgress = 0;
 
-        foreach (var foundUnsuportedPath in foundUnsuportedPaths)
+        foreach (var foundNonExifTakeoutPair in foundTagTypesTakeoutPairs)
         {
-            var fileNameNoExt = Path.GetFileNameWithoutExtension(foundUnsuportedPath);
-            var fileExtension = Path.GetExtension(foundUnsuportedPath);
+            var fileNameNoExt = Path.GetFileNameWithoutExtension(foundNonExifTakeoutPair.Key);
+            var fileExtension = Path.GetExtension(foundNonExifTakeoutPair.Key);
 
-            var newPath = FileUtils.GetUniqueFileName($"{_outputPath}\\{fileNameNoExt}{fileExtension}");
+            var newPath = $"{outputPath}\\{fileNameNoExt}{fileExtension}";
+            newPath = FileUtils.GetUniqueFilePath(newPath);
+            
+            File.Copy(foundNonExifTakeoutPair.Key, newPath, true);
+            
+            metaDataApplier.ApplyJsonMetaDataToNonExifFile(newPath, foundNonExifTakeoutPair.Value, _outputPath);
 
-            File.Copy(foundUnsuportedPath, newPath);
-
-            Logger.LogInformation("Copying original files {0}/{1}: {2}",
-                ++currentProgress, foundUnsuportedPaths.Count, foundUnsuportedPath);
+            File.Delete(foundNonExifTakeoutPair.Key);
+            
+            Logger.LogInformation("Applying Json to Non Exif {0}/{1}: {2}",
+                ++currentProgress, foundNonExifPaths.Count, newPath);
         }
     }
 }

@@ -26,15 +26,11 @@ public partial class JsonNameHandler(ILogger logger) : LoggableBase(logger), IJs
 
         var newJsonPath = _supplementedMetadataRegex.Replace(originalJsonPath, _jsonExtension);
 
-        if (File.Exists(newJsonPath))
+        if (!File.Exists(newJsonPath))
         {
-            return newJsonPath;
+            File.Copy(originalJsonPath, newJsonPath, true);
         }
-        
-        await using FileStream newStream = File.Create(newJsonPath);
-        await using FileStream originalStream = File.Open(originalJsonPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-        await originalStream.CopyToAsync(newStream);
-        
+
         return newJsonPath;
     }
 

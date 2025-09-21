@@ -12,18 +12,19 @@ namespace TakeoutMerger.Core.Handlers;
 
 public interface IMetaDataApplier
 {
-    void ApplyJsonMetaDataToPng(string imagePath, string jsonPath, string outputPath);
+    void ApplyJsonMetaDataToPng(string tiffPath, string pngPath, string jsonPath, string outputPath);
     void ApplyJsonMetaDataToTagImage(string imagePath, string jsonPath, string outputPath);
+    void ApplyJsonMetaDataToNonExifFile(string filePath, string jsonPath, string outputPath);
 }
 
 public class MetaDataApplier(ILogger logger) : LoggableBase(logger), IMetaDataApplier
 {
-    public void ApplyJsonMetaDataToPng(string imagePath, string jsonPath, string outputPath)
+    public void ApplyJsonMetaDataToPng(string tiffPath, string pngPath, string jsonPath, string outputPath)
     {
-        var imageName = Path.GetFileNameWithoutExtension(imagePath);
-        var imageExtension = Path.GetExtension(imagePath);
+        var imageName = Path.GetFileNameWithoutExtension(tiffPath);
+        var imageExtension = Path.GetExtension(tiffPath);
         var newName = $"{outputPath}\\{imageName}{imageExtension}";
-        newName = FileUtils.GetUniqueFileName(newName);
+        newName = FileUtils.GetUniqueFilePath(newName);
 
         var jsonData = File.ReadAllText(jsonPath);
         var metadata = JsonConvert.DeserializeObject<GoogleExifDataDto>(jsonData);
@@ -34,21 +35,15 @@ public class MetaDataApplier(ILogger logger) : LoggableBase(logger), IMetaDataAp
             return;
         }
 
-        string newFilePath;
-
-        using (var image = Image.FromFile(imagePath)) //TODO: Swap to ImageSharp or similar for cross platform support
+        using (var image = Image.FromFile(tiffPath)) //TODO: Swap to ImageSharp or similar for cross platform support
         {
-            ApplyGeoData(image, metadata, imagePath);
-            ApplyDescriptiveData(image, metadata, imagePath);
-            ApplyMiscData(image, metadata, imagePath);
-
-            newFilePath = image.SaveAsUncompressedTiff(newName, outputPath);
+            ApplyGeoData(image, metadata, tiffPath);
+            ApplyDescriptiveData(image, metadata, tiffPath);
+            ApplyMiscData(image, metadata, tiffPath);
         }
 
-        ApplyFileData(newFilePath, metadata);
-
-        //delete old file
-        File.Delete(imagePath);
+        ApplyFileData(tiffPath, metadata);
+        ApplyFileData(pngPath, metadata);
     }
 
     public void ApplyJsonMetaDataToTagImage(string imagePath, string jsonPath, string outputPath)
@@ -56,7 +51,7 @@ public class MetaDataApplier(ILogger logger) : LoggableBase(logger), IMetaDataAp
         var imageName = Path.GetFileNameWithoutExtension(imagePath);
         var imageExtension = Path.GetExtension(imagePath);
         var newName = $"{outputPath}\\{imageName}{imageExtension}";
-        newName = FileUtils.GetUniqueFileName(newName);
+        newName = FileUtils.GetUniqueFilePath(newName);
 
         var jsonData = File.ReadAllText(jsonPath);
         var metadata = JsonConvert.DeserializeObject<GoogleExifDataDto>(jsonData);
@@ -74,20 +69,31 @@ public class MetaDataApplier(ILogger logger) : LoggableBase(logger), IMetaDataAp
             ApplyGeoData(image, metadata, imagePath);
             ApplyDescriptiveData(image, metadata, imagePath);
             ApplyMiscData(image, metadata, imagePath);
-
-            newFilePath = image.SaveAsUncompressedFile(newName, outputPath);
         }
 
-        ApplyFileData(newFilePath, metadata);
-
-
-        File.Delete(imagePath);
+        ApplyFileData(imagePath, metadata);
     }
 
-    private void ApplyFileData(string newFilePath, GoogleExifDataDto metadata)
+    public void ApplyJsonMetaDataToNonExifFile(string filePath, string jsonPath, string outputPath)
+    {
+        var imageName = Path.GetFileNameWithoutExtension(filePath);
+        var imageExtension = Path.GetExtension(filePath);
+
+        var jsonData = File.ReadAllText(jsonPath);
+        var metadata = JsonConvert.DeserializeObject<GoogleExifDataDto>(jsonData);
+
+        if (metadata == null)
+        {
+            Logger.LogWarning("No metadata found in JSON file: {JsonPath}", jsonPath);
+            return;
+        }
+
+        ApplyFileData(filePath, metadata);
+    }
+
+    public void ApplyFileData(string newFilePath, GoogleExifDataDto metadata)
     {
         // consider using UnmanagedFileLoader concept
-
         if (metadata.CreationTime != null)
         {
             var creationDateTime =
@@ -110,14 +116,14 @@ public class MetaDataApplier(ILogger logger) : LoggableBase(logger), IMetaDataAp
         }
     }
 
-    private static DateTime GetDateTimeFromTimeData(ITimeData timeData, Func<DateTime> fallback)
+    private static DateTime GetDateTimeFromTimeData(ITimeData? timeData, Func<DateTime> fallback)
     {
-        if (!string.IsNullOrEmpty(timeData.Formatted))
+        if (!string.IsNullOrEmpty(timeData?.Formatted))
         {
             return timeData.Formatted.GetDateTimeFromFormattedString();
         }
 
-        if (!string.IsNullOrEmpty(timeData.Timestamp))
+        if (!string.IsNullOrEmpty(timeData?.Timestamp))
         {
             return timeData.Timestamp.GetDateTimeFromTimestamp();
         }
@@ -125,7 +131,7 @@ public class MetaDataApplier(ILogger logger) : LoggableBase(logger), IMetaDataAp
         return fallback();
     }
 
-    private Image ApplyMiscData(Image image, GoogleExifDataDto metadata, string filePath)
+    private void ApplyMiscData(Image image, GoogleExifDataDto metadata, string filePath)
     {
         var creationDateTime = GetDateTimeFromTimeData(metadata.CreationTime, () => File.GetCreationTime(filePath));
         var photoTakenDateTime =
@@ -138,8 +144,6 @@ public class MetaDataApplier(ILogger logger) : LoggableBase(logger), IMetaDataAp
         Logger.LogInformation(
             "Descriptive data set; Creation: {CreationDate}, Original: {OriginalDate}, GPS Date: {GpsDate}",
             creationDateTime, creationDateTime, photoTakenDateTime);
-
-        return image;
     }
 
     private void ApplyDescriptiveData(Image image, GoogleExifDataDto metadata, string imagePath)

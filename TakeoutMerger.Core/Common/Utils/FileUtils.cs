@@ -2,7 +2,7 @@
 
 public static class FileUtils
 {
-    public static string GetUniqueFileName(string filePath, int counter = 0)
+    public static string GetUniqueFilePath(string filePath, int counter = 0)
     {
         string newFilePath = counter == 0 ? filePath : GenerateNumberedFileName(filePath, counter);
 
@@ -11,7 +11,7 @@ public static class FileUtils
             return newFilePath;
         }
 
-        return GetUniqueFileName(filePath, counter + 1);
+        return GetUniqueFilePath(filePath, counter + 1);
     }
 
     private static string GenerateNumberedFileName(string originalPath, int number)

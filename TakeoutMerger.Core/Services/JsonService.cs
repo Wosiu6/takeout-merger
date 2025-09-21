@@ -17,9 +17,9 @@ public class JsonService(
 
     public async Task ProcessAsync()
     {
-        Logger.LogInformation("Processing JSON files int {InputPath}", _inputPath);
+        Logger.LogInformation("Processing JSON files in {InputPath}", _inputPath);
 
-        IFileService fileService = new FileService(Logger);
+        FileService fileService = new FileService(Logger);
         List<string> foundJsons = fileService.GetFilesByExtensions(_inputPath, [".json"], searchOption: _searchOption);
 
         if (foundJsons.Count == 0)
@@ -35,11 +35,6 @@ public class JsonService(
         foreach (string foundJsonName in foundJsons)
         {
             var newName = await jsonNameHandler.GenerateNewJsonFileAsync(foundJsonName, _outputPath);
-
-            if (File.Exists(foundJsonName))
-            {
-                File.Delete(foundJsonName);
-            }
 
             Logger.LogInformation("Generating new json {CurrentProgress}/{FoundJsonsCount}: {FoundJsonName}",
                 ++currentProgress, foundJsons.Count, newName);
