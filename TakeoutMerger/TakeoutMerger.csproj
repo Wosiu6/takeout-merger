@@ -5,10 +5,24 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <LangVersion>default</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\TakeoutMerger.ConsoleHost\TakeoutMerger.ConsoleHost.csproj" />
+      <PackageReference Include="ConsoleAppFramework" Version="5.6.1">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+      <PackageReference Include="ConsoleAppFramework.Abstractions" Version="5.6.1" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.9" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.9" />
+      <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.9" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.9" />
+      <PackageReference Include="ZLogger" Version="2.5.10" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\TakeoutMerger.Core\TakeoutMerger.Core.csproj" />
     </ItemGroup>
 
 </Project>

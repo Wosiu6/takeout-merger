@@ -40,8 +40,6 @@ public class TagImageService(ILogger logger, string inputPath, string outputPath
             
             metaDataApplier.ApplyJsonMetaDataToTagImage(newPath, foundTagTypesTakeoutPair.Value, _outputPath);
 
-            File.Delete(foundTagTypesTakeoutPair.Key);
-            
             Logger.LogInformation("Applying Json to Tags {CurrentProgress}/{TagTypeCount}: {Key}",
                 ++currentProgress, foundTagTypesTakeoutPairs.Count, foundTagTypesTakeoutPair.Key);
         }

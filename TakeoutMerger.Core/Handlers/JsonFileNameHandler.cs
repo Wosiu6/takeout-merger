@@ -9,7 +9,7 @@ public interface IJsonNameHandler
     Task<string> GenerateNewJsonFileAsync(string originalJsonPath, string outputPath);
 }
 
-public partial class JsonNameHandler(ILogger logger) : LoggableBase(logger), IJsonNameHandler
+public partial class JsonFileNameHandler(ILogger logger) : LoggableBase(logger), IJsonNameHandler
 {
     private const string _supplementedMetadataRegxString =
         @"^*.sup(p(l(e(m(e(n(t(a(l(-(m(e(t(a(d(a(t(a)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?.*\.json$";

@@ -1,37 +1,21 @@
 ﻿using System.Runtime.ExceptionServices;
 using Microsoft.Extensions.Logging;
 using TakeoutMerger.Core.Common.Logging;
-using TakeoutMerger.Core.Common.Utils;
 using TakeoutMerger.Core.Services;
 
-namespace TakeoutMerger.ConsoleHost;
+namespace TakeoutMerger;
 
-public class TakeoutMerger
+public class TakeoutMerger()
 {
     private int _counter = 0;
     private int _amountOfFolders = 0;
 
-    public async Task Start(string[] args)
+    public async Task StartAsync(string[] args)
     {
-        if (args.Length < 2)
-        {
-            var errorMessage =
-                $"Input and output paths must be provided.\nUsage: TakeoutMerger <directoryPath> <outputPath>\nExample: TakeoutMerger C:\\Downloads\\Takeout C:\\Downloads\\MyOutputFolder";
-            throw new ArgumentException(errorMessage);
-        }
-
-        string inputPath = args[0];
-        string outputPath = args[1];
-
-        if (string.IsNullOrEmpty(inputPath) || string.IsNullOrEmpty(outputPath))
-        {
-            var errorMessage =
-                $"Input and output paths must be provided.\nUsage: TakeoutMerger <directoryPath> <outputPath>\nExample: TakeoutMerger C:\\Downloads\\Takeout C:\\Downloads\\MyOutputFolder";
-            throw new ArgumentException(errorMessage);
-        }
-
-        DirectoryUtils.EnsureWorkingDirectoryExists(inputPath, outputPath);
-
+        var config = new Options(args[0], args[1]);
+        var outputPath = config.OutputPath;
+        var inputPath = config.InputPath;
+        
 #if DEBUG
         string logFilePath = $"{outputPath}\\console_log.txt";
         using StreamWriter logFileWriter = new(logFilePath, append: true);
@@ -67,7 +51,7 @@ public class TakeoutMerger
     {
         try
         {
-            logger.LogInformation($"Processing folder: {inputPath}");
+            logger.LogInformation("Processing folder: {InputPath}", inputPath);
 
             JsonService jsonService = new(logger, inputPath, outputPath, searchOption);
             await jsonService.ProcessAsync();
@@ -82,11 +66,11 @@ public class TakeoutMerger
             await nonExifFilesService.ProcessAsync();
 
             Interlocked.Increment(ref _counter);
-            logger.LogCritical($"Progress: {_counter}/{_amountOfFolders}.");
+            logger.LogCritical("Progress: {Counter}/{AmountOfFolders}.", _counter, _amountOfFolders);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, $"Error processing folder: {inputPath}");
+            logger.LogError(ex, "Error processing folder: {InputPath}", inputPath);
         }
     }
 

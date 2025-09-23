@@ -28,13 +28,13 @@ public class JsonService(
             return;
         }
 
-        JsonNameHandler jsonNameHandler = new(Logger);
+        JsonFileNameHandler jsonFileNameHandler = new(Logger);
 
         int currentProgress = 0;
 
         foreach (string foundJsonName in foundJsons)
         {
-            var newName = await jsonNameHandler.GenerateNewJsonFileAsync(foundJsonName, _outputPath);
+            var newName = await jsonFileNameHandler.GenerateNewJsonFileAsync(foundJsonName, _outputPath);
 
             Logger.LogInformation("Generating new json {CurrentProgress}/{FoundJsonsCount}: {FoundJsonName}",
                 ++currentProgress, foundJsons.Count, newName);

@@ -6,16 +6,16 @@ using Xunit;
 
 namespace TakeoutMerger.Tests.Handlers;
 
-public class JsonNameHandlerTests : IDisposable
+public class JsonFileNameHandlerTests : IDisposable
 {
     private readonly ILogger _mockLogger;
-    private readonly JsonNameHandler _handler;
+    private readonly JsonFileNameHandler _handler;
     private readonly string _testDirectory;
 
-    public JsonNameHandlerTests()
+    public JsonFileNameHandlerTests()
     {
         _mockLogger = Substitute.For<ILogger>();
-        _handler = new JsonNameHandler(_mockLogger);
+        _handler = new JsonFileNameHandler(_mockLogger);
         _testDirectory = Path.Combine(Path.GetTempPath(), "JsonNameHandlerTests", Guid.NewGuid().ToString());
 
         Directory.CreateDirectory(_testDirectory);

@@ -41,8 +41,6 @@ public class NonExifFilesService(ILogger logger, string inputPath, string output
             
             metaDataApplier.ApplyJsonMetaDataToNonExifFile(newPath, foundNonExifTakeoutPair.Value, _outputPath);
 
-            File.Delete(foundNonExifTakeoutPair.Key);
-            
             Logger.LogInformation("Applying Json to Non Exif {0}/{1}: {2}",
                 ++currentProgress, foundNonExifPaths.Count, newPath);
         }
