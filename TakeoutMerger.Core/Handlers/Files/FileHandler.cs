@@ -30,8 +30,6 @@ public class FileHandler(ILogger<FileHandler> logger, IPngToTiffConverter pngToT
             fileExtension = Path.GetExtension(mediaFilePath);
         }
 
-        File.Copy(originalFilePath, Path.Combine(outputFolder, fileFullName));
-        
         if (_tagTypeExtensions.Contains(fileExtension))
         {
             _metaDataApplier.ApplyJsonMetaDataToTagImage(mediaFilePath, metadataFilePath, outputFolder);
@@ -40,6 +38,8 @@ public class FileHandler(ILogger<FileHandler> logger, IPngToTiffConverter pngToT
         {
             _metaDataApplier.ApplyJsonMetaDataToNonExifFile(mediaFilePath, metadataFilePath, outputFolder);
         }
+        
+        File.Delete(mediaFilePath);
         
         await Task.CompletedTask;
     }

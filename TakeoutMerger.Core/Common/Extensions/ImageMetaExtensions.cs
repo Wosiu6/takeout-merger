@@ -55,10 +55,31 @@ public static class ImageMetaExtensions
     public static void SetDateTimeGPS(this Image image, DateTime dateTimeOriginal)
     {
         var dateToSave = dateTimeOriginal.ToString(_dateFormat);
-        var timeToSave = dateTimeOriginal.ToString(_timeFormat);
+        
+        SetMetaDataItem(image, ExifTag.GPS_DATE_STAMP, (short)TagTypes.ASCII, GetNullTerminatedString(dateToSave));
+        SetGPSTimeStamp(image, dateTimeOriginal);
+    }
 
-        SetMetaDataItem(image, ExifTag.GPS_DATE_STAMP, (short)TagTypes.RATIONAL, GetNullTerminatedString(dateToSave));
-        SetMetaDataItem(image, ExifTag.GPS_TIME_STAMP, (short)TagTypes.RATIONAL, GetNullTerminatedString(timeToSave));
+    private static void SetGPSTimeStamp(Image image, DateTime dateTime)
+    {
+        byte[] timeBytes = new byte[3 * 8];
+        int offset = 0;
+        
+        Array.Copy(BitConverter.GetBytes(dateTime.Hour), 0, timeBytes, offset, 4);
+        offset += 4;
+        Array.Copy(BitConverter.GetBytes(1), 0, timeBytes, offset, 4);
+        offset += 4;
+        
+        Array.Copy(BitConverter.GetBytes(dateTime.Minute), 0, timeBytes, offset, 4);
+        offset += 4;
+        Array.Copy(BitConverter.GetBytes(1), 0, timeBytes, offset, 4);
+        offset += 4;
+        
+        Array.Copy(BitConverter.GetBytes(dateTime.Second * 100 + dateTime.Millisecond / 10), 0, timeBytes, offset, 4);
+        offset += 4;
+        Array.Copy(BitConverter.GetBytes(100), 0, timeBytes, offset, 4);
+        
+        SetMetaDataItem(image, ExifTag.GPS_TIME_STAMP, (short)TagTypes.RATIONAL, timeBytes);
     }
 
     public static void SetGPSVersionId(this Image image)
@@ -72,29 +93,33 @@ public static class ImageMetaExtensions
         if (latitude < 0)
         {
             latHemisphere = "S";
-            latitude = -latitude;
+            latitude = Math.Abs(latitude);
         }
 
         string lngHemisphere = "E";
         if (longitude < 0)
         {
             lngHemisphere = "W";
-            longitude = -longitude;
+            longitude = Math.Abs(longitude);
         }
 
-        byte[] altitudeRef = [0];
+        byte altitudeRef = 0; // Above sea level
         if (altitude < 0)
         {
-            altitudeRef = [1];
-            altitude = -altitude;
+            altitudeRef = 1; // Below sea level
+            altitude = Math.Abs(altitude);
         }
 
         SetMetaDataItem(image, ExifTag.GPS_LATITUDE, (short)TagTypes.RATIONAL, latitude.ConvertToRationalTriplet());
         SetMetaDataItem(image, ExifTag.GPS_LATITUDE_REF, (short)TagTypes.ASCII, GetNullTerminatedString(latHemisphere));
         SetMetaDataItem(image, ExifTag.GPS_LONGITUDE, (short)TagTypes.RATIONAL, longitude.ConvertToRationalTriplet());
         SetMetaDataItem(image, ExifTag.GPS_LONGITUDE_REF, (short)TagTypes.ASCII, GetNullTerminatedString(lngHemisphere));
-        SetMetaDataItem(image, ExifTag.GPS_ALTITUDE, (short)TagTypes.RATIONAL, altitude.ConvertToRationalTriplet());
-        SetMetaDataItem(image, ExifTag.GPS_ALTITUDE_REF, (short)TagTypes.BYTE, altitudeRef);
+        
+        byte[] altitudeBytes = new byte[8];
+        Array.Copy(BitConverter.GetBytes((int)(altitude * 100)), 0, altitudeBytes, 0, 4);
+        Array.Copy(BitConverter.GetBytes(100), 0, altitudeBytes, 4, 4);
+        SetMetaDataItem(image, ExifTag.GPS_ALTITUDE, (short)TagTypes.RATIONAL, altitudeBytes);
+        SetMetaDataItem(image, ExifTag.GPS_ALTITUDE_REF, (short)TagTypes.BYTE, new[] { altitudeRef });
     }
 
     public static void SetGPSProcessingMethod(this Image image)
@@ -106,17 +131,39 @@ public static class ImageMetaExtensions
     {
         PropertyItem? propertyItem = image.PropertyItems.FirstOrDefault(i => i.Id == id);
 
-        return propertyItem == null ? 0 : BitConverter.ToDouble(propertyItem.Value);
+        if (propertyItem == null || propertyItem.Value == null || propertyItem.Value.Length < 8)
+            return 0;
+
+        if (propertyItem.Type == (short)TagTypes.RATIONAL && propertyItem.Value.Length >= 8)
+        {
+            int numerator = BitConverter.ToInt32(propertyItem.Value, 0);
+            int denominator = BitConverter.ToInt32(propertyItem.Value, 4);
+            return denominator != 0 ? (double)numerator / denominator : 0;
+        }
+
+        return propertyItem.Value.Length >= 8 ? BitConverter.ToDouble(propertyItem.Value, 0) : 0;
     }
 
     public static string GetMetaDataString(this Image image, int id)
     {
         PropertyItem? propertyItem = image.PropertyItems.FirstOrDefault(i => i.Id == id);
 
-        return propertyItem == null ? string.Empty : BitConverter.ToString(propertyItem.Value); 
+        if (propertyItem == null || propertyItem.Value == null || propertyItem.Value.Length == 0)
+            return string.Empty;
+
+        if (propertyItem.Type == (short)TagTypes.ASCII)
+        {
+            int length = propertyItem.Value.Length;
+            if (propertyItem.Value[length - 1] == 0)
+                length--;
+            
+            return Encoding.ASCII.GetString(propertyItem.Value, 0, length);
+        }
+
+        return BitConverter.ToString(propertyItem.Value);
     }
     
-    private static void SetMetaDataItem(Image image, int id, short type, byte[] data)
+    private static void SetMetaDataItem(this Image image, int id, short type, byte[] data)
     {
         PropertyItem property;
     
@@ -126,7 +173,7 @@ public static class ImageMetaExtensions
         }
         else
         {
-            property = (PropertyItem)Activator.CreateInstance(typeof(PropertyItem), true);
+            property = (PropertyItem)Activator.CreateInstance(typeof(PropertyItem), true)!;
         }
     
         property.Id = id;
