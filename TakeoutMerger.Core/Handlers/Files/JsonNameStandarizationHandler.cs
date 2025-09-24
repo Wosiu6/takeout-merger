@@ -34,8 +34,6 @@ public class JsonNameStandardizationHandler(ILogger<JsonNameStandardizationHandl
             {
                 File.Copy(foundJson, newJsonPath, true);
             }
-            
-            File.Delete(foundJson);
         }
     }
 }
