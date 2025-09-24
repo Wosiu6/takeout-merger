@@ -1,6 +1,6 @@
 ﻿namespace TakeoutMerger.Core.Common.Interfaces;
 
-public interface IHandler
+public interface ICommand
 {
-    Task HandleAsync();
+    void Execute();
 }

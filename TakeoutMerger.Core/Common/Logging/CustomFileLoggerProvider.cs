@@ -2,14 +2,9 @@
 
 namespace TakeoutMerger.Core.Common.Logging;
 
-public class CustomFileLoggerProvider : ILoggerProvider
+public class CustomFileLoggerProvider(StreamWriter logFileWriter) : ILoggerProvider
 {
-    private readonly StreamWriter _logFileWriter;
-
-    public CustomFileLoggerProvider(StreamWriter logFileWriter)
-    {
-        _logFileWriter = logFileWriter ?? throw new ArgumentNullException(nameof(logFileWriter));
-    }
+    private readonly StreamWriter _logFileWriter = logFileWriter ?? throw new ArgumentNullException(nameof(logFileWriter));
 
     public ILogger CreateLogger(string categoryName)
     {
@@ -22,20 +17,11 @@ public class CustomFileLoggerProvider : ILoggerProvider
     }
 }
 
-public class CustomFileLogger : ILogger
+public class CustomFileLogger(string categoryName, StreamWriter logFileWriter) : ILogger
 {
-    private readonly string _categoryName;
-    private readonly StreamWriter _logFileWriter;
-
-    public CustomFileLogger(string categoryName, StreamWriter logFileWriter)
-    {
-        _categoryName = categoryName;
-        _logFileWriter = logFileWriter;
-    }
-
     public IDisposable BeginScope<TState>(TState state)
     {
-        return _logFileWriter;
+        return logFileWriter;
     }
 
     public bool IsEnabled(LogLevel logLevel)
@@ -61,7 +47,7 @@ public class CustomFileLogger : ILogger
         var message = formatter(state, exception);
 
         //Write log messages to text file
-        _logFileWriter.WriteLine($"[{logLevel}] [{_categoryName}] {message}");
-        _logFileWriter.Flush();
+        logFileWriter.WriteLine($"[{logLevel}] [{categoryName}] {message}");
+        logFileWriter.Flush();
     }
 }

@@ -17,8 +17,10 @@ public interface IMetaDataApplier
     void ApplyJsonMetaDataToNonExifFile(string filePath, string jsonPath, string outputPath);
 }
 
-public class MetaDataApplier(ILogger logger) : LoggableBase(logger), IMetaDataApplier
+public class MetaDataApplier(ILogger<MetaDataApplier> logger) : IMetaDataApplier
 {
+    private readonly ILogger _logger = logger; 
+    
     public void ApplyJsonMetaDataToPng(string tiffPath, string pngPath, string jsonPath, string outputPath)
     {
         var imageName = Path.GetFileNameWithoutExtension(tiffPath);
@@ -31,15 +33,17 @@ public class MetaDataApplier(ILogger logger) : LoggableBase(logger), IMetaDataAp
 
         if (metadata == null)
         {
-            Logger.LogWarning("No metadata found in JSON file: {JsonPath}", jsonPath);
+            _logger.LogWarning("No metadata found in JSON file: {JsonPath}", jsonPath);
             return;
         }
 
-        using (var image = Image.FromFile(tiffPath)) //TODO: Swap to ImageSharp or similar for cross platform support
+        using (var image = Image.FromFile(tiffPath))
         {
             ApplyGeoData(image, metadata, tiffPath);
             ApplyDescriptiveData(image, metadata, tiffPath);
             ApplyMiscData(image, metadata, tiffPath);
+            
+            image.Save(Path.Combine(outputPath, newName));
         }
 
         ApplyFileData(tiffPath, metadata);
@@ -58,17 +62,17 @@ public class MetaDataApplier(ILogger logger) : LoggableBase(logger), IMetaDataAp
 
         if (metadata == null)
         {
-            Logger.LogWarning("No metadata found in JSON file: {JsonPath}", jsonPath);
+            _logger.LogWarning("No metadata found in JSON file: {JsonPath}", jsonPath);
             return;
         }
-
-        string newFilePath;
 
         using (var image = Image.FromFile(imagePath))
         {
             ApplyGeoData(image, metadata, imagePath);
             ApplyDescriptiveData(image, metadata, imagePath);
             ApplyMiscData(image, metadata, imagePath);
+            
+            image.Save(Path.Combine(outputPath, newName));
         }
 
         ApplyFileData(imagePath, metadata);
@@ -84,7 +88,7 @@ public class MetaDataApplier(ILogger logger) : LoggableBase(logger), IMetaDataAp
 
         if (metadata == null)
         {
-            Logger.LogWarning("No metadata found in JSON file: {JsonPath}", jsonPath);
+            _logger.LogWarning("No metadata found in JSON file: {JsonPath}", jsonPath);
             return;
         }
 
@@ -103,7 +107,7 @@ public class MetaDataApplier(ILogger logger) : LoggableBase(logger), IMetaDataAp
             File.SetLastAccessTimeUtc(newFilePath, creationDateTime);
             File.SetLastWriteTimeUtc(newFilePath, creationDateTime);
 
-            Logger.LogInformation("File written/access time set: {FileCreationTime}", creationDateTime);
+            _logger.LogInformation("File written/access time set: {FileCreationTime}", creationDateTime);
         }
 
         if (metadata.PhotoTakenTime != null)
@@ -112,7 +116,7 @@ public class MetaDataApplier(ILogger logger) : LoggableBase(logger), IMetaDataAp
                 GetDateTimeFromTimeData(metadata.PhotoTakenTime, () => File.GetLastWriteTime(newFilePath));
             File.SetCreationTime(newFilePath, photoTakenDateTime);
 
-            Logger.LogInformation("File creation time set: {FileCreationTime}", photoTakenDateTime);
+            _logger.LogInformation("File creation time set: {FileCreationTime}", photoTakenDateTime);
         }
     }
 
@@ -131,7 +135,7 @@ public class MetaDataApplier(ILogger logger) : LoggableBase(logger), IMetaDataAp
         return fallback();
     }
 
-    private void ApplyMiscData(Image image, GoogleExifDataDto metadata, string filePath)
+    private Image ApplyMiscData(Image image, GoogleExifDataDto metadata, string filePath)
     {
         var creationDateTime = GetDateTimeFromTimeData(metadata.CreationTime, () => File.GetCreationTime(filePath));
         var photoTakenDateTime =
@@ -141,45 +145,49 @@ public class MetaDataApplier(ILogger logger) : LoggableBase(logger), IMetaDataAp
         image.SetCreationTime(creationDateTime);
         image.SetDateTimeGPS(photoTakenDateTime);
 
-        Logger.LogInformation(
+        _logger.LogInformation(
             "Descriptive data set; Creation: {CreationDate}, Original: {OriginalDate}, GPS Date: {GpsDate}",
             creationDateTime, creationDateTime, photoTakenDateTime);
+
+        return image;
     }
 
-    private void ApplyDescriptiveData(Image image, GoogleExifDataDto metadata, string imagePath)
+    private Image ApplyDescriptiveData(Image image, GoogleExifDataDto metadata, string imagePath)
     {
         var imageIdentifier = Path.GetFileName(imagePath);
 
         if (string.IsNullOrEmpty(image.GetMetaDataString(ExifTag.IMAGE_DESCRIPTION)))
         {
             image.SetTitle(metadata.Title);
-            Logger.LogInformation("Setting image title to: {MetadataTitle} for image {ImageIdentifier}.",
+            _logger.LogInformation("Setting image title to: {MetadataTitle} for image {ImageIdentifier}.",
                 metadata.Title, imageIdentifier);
         }
 
         if (string.IsNullOrEmpty(image.GetMetaDataString(ExifTag.USER_COMMENT)))
         {
             image.SetDescription(metadata.Description);
-            Logger.LogInformation("Setting image description to: {MetadataDescription} for image {ImageIdentifier}.",
+            _logger.LogInformation("Setting image description to: {MetadataDescription} for image {ImageIdentifier}.",
                 metadata.Description, imageIdentifier);
         }
 
         if (string.IsNullOrEmpty(image.GetMetaDataString(ExifTag.ARTIST)))
         {
             image.SetAuthor(Environment.UserName);
-            Logger.LogInformation("Setting image author to: {UserName} for image {ImageIdentifier}.",
+            _logger.LogInformation("Setting image author to: {UserName} for image {ImageIdentifier}.",
                 Environment.UserName, imageIdentifier);
         }
+
+        return image;
     }
 
-    private void ApplyGeoData(Image image, GoogleExifDataDto metadata, string imagePath)
+    private Image ApplyGeoData(Image image, GoogleExifDataDto metadata, string imagePath)
     {
         var imageIdentifier = Path.GetFileName(imagePath);
 
         if (HasValidGeoData(image))
         {
-            Logger.LogInformation("Image {ImageIdentifier} already has valid geo data, skipping.", imageIdentifier);
-            return;
+            _logger.LogInformation("Image {ImageIdentifier} already has valid geo data, skipping.", imageIdentifier);
+            return image;
         }
 
         image.SetGPSProcessingMethod();
@@ -191,17 +199,19 @@ public class MetaDataApplier(ILogger logger) : LoggableBase(logger), IMetaDataAp
         if (geoDataExif != null)
         {
             image.SetGeoTags(geoDataExif.Latitude ?? 0, geoDataExif.Longitude ?? 0, geoDataExif.Altitude ?? 0);
-            Logger.LogInformation("Geo Data set from Exif: {GeoData}", geoDataExif);
+            _logger.LogInformation("Geo Data set from Exif: {GeoData}", geoDataExif);
         }
         else if (geoData != null)
         {
             image.SetGeoTags(geoData.Latitude ?? 0, geoData.Longitude ?? 0, geoData.Altitude ?? 0);
-            Logger.LogInformation("Geo Data set: {GeoData}", geoData);
+            _logger.LogInformation("Geo Data set: {GeoData}", geoData);
         }
         else
         {
-            Logger.LogWarning("No geo data available in metadata for image {ImageIdentifier}.", imageIdentifier);
+            _logger.LogWarning("No geo data available in metadata for image {ImageIdentifier}.", imageIdentifier);
         }
+
+        return image;
     }
 
     private static bool HasValidGeoData(Image image)

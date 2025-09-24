@@ -15,7 +15,7 @@ public partial class JsonFileNameHandler(ILogger logger) : LoggableBase(logger),
         @"^*.sup(p(l(e(m(e(n(t(a(l(-(m(e(t(a(d(a(t(a)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?.*\.json$";
 
     private const string _jsonExtension = ".json";
-    private static readonly Regex _supplementedMetadataRegex = SupplementedMetadataRegex();
+    private static readonly Regex _supplementedMetadataRegex = MyRegex();
     
     public async Task<string> GenerateNewJsonFileAsync(string originalJsonPath, string outputPath)
     {
@@ -34,6 +34,6 @@ public partial class JsonFileNameHandler(ILogger logger) : LoggableBase(logger),
         return newJsonPath;
     }
 
-    [GeneratedRegex(_supplementedMetadataRegxString, RegexOptions.IgnoreCase | RegexOptions.Compiled, "en-GB")]
-    private static partial Regex SupplementedMetadataRegex();
+    [GeneratedRegex(_supplementedMetadataRegxString)]
+    private static partial Regex MyRegex();
 }

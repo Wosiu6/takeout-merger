@@ -12,9 +12,8 @@ public class TakeoutMerger()
 
     public async Task StartAsync(string[] args)
     {
-        var config = new Options(args[0], args[1]);
-        var outputPath = config.OutputPath;
-        var inputPath = config.InputPath;
+        var outputPath = args[0];
+        var inputPath = args[1];
         
 #if DEBUG
         string logFilePath = $"{outputPath}\\console_log.txt";

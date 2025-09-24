@@ -115,16 +115,25 @@ public static class ImageMetaExtensions
 
         return propertyItem == null ? string.Empty : BitConverter.ToString(propertyItem.Value); 
     }
-
     
-
     private static void SetMetaDataItem(Image image, int id, short type, byte[] data)
     {
-        PropertyItem property = image.PropertyItems[0];
+        PropertyItem property;
+    
+        if (image.PropertyItems != null && image.PropertyItems.Length > 0)
+        {
+            property = image.PropertyItems[0];
+        }
+        else
+        {
+            property = (PropertyItem)Activator.CreateInstance(typeof(PropertyItem), true);
+        }
+    
         property.Id = id;
-        property.Len = data.Length;
         property.Type = type;
+        property.Len = data.Length;
         property.Value = data;
+    
         image.SetPropertyItem(property);
     }
 

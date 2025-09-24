@@ -11,11 +11,13 @@ public interface IFileService
     Dictionary<string, string> GetFileDataMatches(string directoryPath, List<string> foundFiles);
 }
 
-public class FileService(ILogger logger) : LoggableBase(logger), IFileService
+public class FileService(ILogger<FileService> logger) : IFileService
 {
+    private readonly ILogger _logger = logger;
+    
     public List<string> GetFilesByExtensions(string directoryPath, ICollection<string> extensions, SearchOption searchOption = SearchOption.AllDirectories, bool excludeExtensions = false)
     {
-        Logger.LogInformation("Searching in: {DirectoryPath}", directoryPath);
+        _logger.LogInformation("Searching in: {DirectoryPath}", directoryPath);
 
         List<string> filesList = [];
         IEnumerable<string> allFiles = Directory.EnumerateFiles(directoryPath, "*.*", searchOption);
@@ -44,13 +46,13 @@ public class FileService(ILogger logger) : LoggableBase(logger), IFileService
             }
         }
 
-        Logger.LogInformation("Found {FileCount} files; extensions: {Extensions} in {Path}", filesList.Count, string.Join(",", extensions), directoryPath);
+        _logger.LogInformation("Found {FileCount} files; extensions: {Extensions} in {Path}", filesList.Count, string.Join(",", extensions), directoryPath);
         return filesList;
     }
 
     public Dictionary<string, string> GetFileDataMatches(string directoryPath, List<string> foundFiles)
     {
-        Logger.LogInformation("Matching files with JSONs in: {DirectoryPath}", directoryPath);
+        _logger.LogInformation("Matching files with JSONs in: {DirectoryPath}", directoryPath);
 
         Dictionary<string, string> fileJsonMap = [];
         HashSet<string> usedJsonFiles = [];
@@ -67,7 +69,7 @@ public class FileService(ILogger logger) : LoggableBase(logger), IFileService
 
         foreach (string foundFile in foundFiles)
         {
-            Logger.LogInformation("Matching JSON: {Progress}/{TotalFiles}: {FoundFileName}", ++progress, totalFiles, foundFile);
+            _logger.LogInformation("Matching JSON: {Progress}/{TotalFiles}: {FoundFileName}", ++progress, totalFiles, foundFile);
 
             // try starts with
             var match = potentialJsonFiles.Where(x => !usedJsonFiles.Contains(x) && x.StartsWith(foundFile)).FirstOrDefault();
@@ -75,7 +77,7 @@ public class FileService(ILogger logger) : LoggableBase(logger), IFileService
             if (match != null)
             {
                 fileJsonMap[foundFile] = match;
-                Logger.LogInformation("Found match for {FoundFile}: {Match}", foundFile, match);
+                _logger.LogInformation("Found match for {FoundFile}: {Match}", foundFile, match);
                 continue;
             }
 
@@ -92,7 +94,7 @@ public class FileService(ILogger logger) : LoggableBase(logger), IFileService
             {
                 fileJsonMap[foundFile] = exactMatch;
                 usedJsonFiles.Add(exactMatch);
-                Logger.LogInformation("Found exact match for {FoundFile}: {ExactMatch}", foundFile, exactMatch);
+                _logger.LogInformation("Found exact match for {FoundFile}: {ExactMatch}", foundFile, exactMatch);
                 continue;
             }
 
@@ -114,11 +116,11 @@ public class FileService(ILogger logger) : LoggableBase(logger), IFileService
             if (closestMatch != null)
             {
                 fileJsonMap[foundFile] = closestMatch;
-                Logger.LogInformation("Found closest match for {FoundFile}: {ClosestMatch}", foundFile, closestMatch);
+                _logger.LogInformation("Found closest match for {FoundFile}: {ClosestMatch}", foundFile, closestMatch);
             }
         }
 
-        Logger.LogInformation("Matched {FileJsonMapCount} files in {directoryPath}", fileJsonMap.Count, directoryPath);
+        _logger.LogInformation("Matched {FileJsonMapCount} files in {directoryPath}", fileJsonMap.Count, directoryPath);
         return fileJsonMap;
     }
 }

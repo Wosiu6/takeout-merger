@@ -19,36 +19,36 @@ public class PngService(
 
     public async Task ProcessAsync()
     {
-        IFileService fileService = new FileService(Logger);
-        List<string> foundPngPaths =
-            fileService.GetFilesByExtensions(_inputPath, [".png"], searchOption: _searchOption);
+        // IFileService fileService = new FileService(Logger);
+        // List<string> foundPngPaths =
+        //     fileService.GetFilesByExtensions(_inputPath, [".png"], searchOption: _searchOption);
+        //
+        // if (foundPngPaths.Count == 0)
+        // {
+        //     Logger.LogWarning("No PNG files found in the specified directory.");
+        //     return;
+        // }
+        //
+        // IDictionary<string, string> pngTakeoutPairs =
+        //     fileService.GetFileDataMatches(_inputPath, foundPngPaths).ToFrozenDictionary();
+        //
+        // IMetaDataApplier metaDataApplier = new MetaDataApplier(Logger);
+        //
+        // int currentProgress = 0;
 
-        if (foundPngPaths.Count == 0)
-        {
-            Logger.LogWarning("No PNG files found in the specified directory.");
-            return;
-        }
-
-        IDictionary<string, string> pngTakeoutPairs =
-            fileService.GetFileDataMatches(_inputPath, foundPngPaths).ToFrozenDictionary();
-
-        IMetaDataApplier metaDataApplier = new MetaDataApplier(Logger);
-
-        int currentProgress = 0;
-
-        foreach (var pngTakeoutPair in pngTakeoutPairs)
-        {
-            var tiffPath =
-                new PngToTiffConverter(Logger, _outputPath).Convert(pngTakeoutPair.Key, CompressionMode.None);
-            var pngPath = tiffPath + ".png";
-
-            File.Copy(pngTakeoutPair.Key, pngPath);
-
-            metaDataApplier.ApplyJsonMetaDataToPng(tiffPath: tiffPath, pngPath: pngPath, jsonPath: pngTakeoutPair.Value,
-                outputPath: _outputPath);
-
-            Logger.LogInformation("Applying Json to PNGs {CurrentProgress}/{PngPairCount}: {Key}",
-                ++currentProgress, pngTakeoutPairs.Count, pngTakeoutPair.Key);
-        }
+        // foreach (var pngTakeoutPair in pngTakeoutPairs)
+        // {
+        //     var tiffPath =
+        //         new PngToTiffConverter(Logger, _outputPath).Convert(pngTakeoutPair.Key, CompressionMode.None);
+        //     var pngPath = tiffPath + ".png";
+        //
+        //     File.Copy(pngTakeoutPair.Key, pngPath);
+        //
+        //     metaDataApplier.ApplyJsonMetaDataToPng(tiffPath: tiffPath, pngPath: pngPath, jsonPath: pngTakeoutPair.Value,
+        //         outputPath: _outputPath);
+        //
+        //     Logger.LogInformation("Applying Json to PNGs {CurrentProgress}/{PngPairCount}: {Key}",
+        //         ++currentProgress, pngTakeoutPairs.Count, pngTakeoutPair.Key);
+        // }
     }
 }
