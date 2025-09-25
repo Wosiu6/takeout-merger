@@ -1,8 +1,9 @@
-﻿using System.Drawing;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Drawing.Imaging;
 
 namespace TakeoutMerger.Core.Common.Utils;
 
+[SuppressMessage("Interoperability", "CA1416:Validate platform compatibility")]
 public static class ImageUtils
 {
     private static string GetMimeType(string extension)
@@ -20,23 +21,23 @@ public static class ImageUtils
         }
     }
 
-    public static ImageCodecInfo GetEncoder(string mimeType)
+    public static ImageCodecInfo? GetEncoder(string mimeType)
     {
-        var codecs = ImageCodecInfo.GetImageEncoders();
+        ImageCodecInfo?[] codecs = ImageCodecInfo.GetImageEncoders();
         foreach (var codec in codecs)
         {
-            if (codec.MimeType == mimeType)
+            if (codec?.MimeType == mimeType)
                 return codec;
         }
         return null;
     }
 
-    public static ImageCodecInfo GetEncoder(ImageFormat format)
+    public static ImageCodecInfo? GetEncoder(ImageFormat format)
     {
-        ImageCodecInfo[] codecs = ImageCodecInfo.GetImageEncoders();
-        foreach (ImageCodecInfo codec in codecs)
+        ImageCodecInfo?[] codecs = ImageCodecInfo.GetImageEncoders();
+        foreach (ImageCodecInfo? codec in codecs)
         {
-            if (codec.FormatID == format.Guid)
+            if (codec?.FormatID == format.Guid)
             {
                 return codec;
             }

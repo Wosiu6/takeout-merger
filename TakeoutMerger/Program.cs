@@ -19,7 +19,7 @@ app.ConfigureServices(x =>
     x.AddScoped<IFileMetadataMatcher, FileMetadataMetadataMatcher>();
     x.AddScoped<IJsonNameStandardizationHandler, JsonNameStandardizationHandler>();
     x.AddScoped<IPngToTiffConverter, PngToTiffConverter>();
-    x.AddScoped<IMetaDataApplier, MetaDataApplier>();
+    x.AddScoped<IMetaDataApplier, MetadataApplier>();
 });
 app.ConfigureLogging(x =>
 {

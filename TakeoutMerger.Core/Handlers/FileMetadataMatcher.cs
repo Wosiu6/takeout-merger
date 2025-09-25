@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using TakeoutMerger.Core.Common.Utils;
 using TakeoutMerger.Core.Services;
+using ZLogger;
 
 namespace TakeoutMerger.Core.Handlers;
 
@@ -10,13 +11,13 @@ public interface IFileMetadataMatcher
     Dictionary<string, string> GetFileDataMatches(string directoryPath);
 }
 
-public class FileMetadataMetadataMatcher(ILogger<MetaDataApplier> logger) : IFileMetadataMatcher
+public class FileMetadataMetadataMatcher(ILogger<MetadataApplier> logger) : IFileMetadataMatcher
 {
     private readonly ILogger _logger = logger;
     
     public Dictionary<string, string> GetFileDataMatches(string directoryPath)
     {
-        _logger.LogInformation("Matching files with JSONs in: {DirectoryPath}", directoryPath);
+        _logger.ZLogInformation($"Matching files with JSONs in: {directoryPath}");
 
         var fileJsonMap = new Dictionary<string, string>();
         var mediaFiles = FileUtils.GetFilesExceptExtensions(directoryPath, [".json"]);
@@ -32,15 +33,12 @@ public class FileMetadataMetadataMatcher(ILogger<MetaDataApplier> logger) : IFil
         foreach (var mediaFile in mediaFiles)
         {
             var match = FindMatchingJsonFile(mediaFile, metadataFiles);
-            if (match != null)
-            {
-                fileJsonMap[mediaFile] = match;
-                _logger.LogInformation("Found match for {MediaFile}: {JsonFile}", mediaFile, match);
-            }
+            if (match == null) continue;
+            fileJsonMap[mediaFile] = match;
+            _logger.ZLogInformation($"Found match for {mediaFile}: {match}");
         }
 
-        _logger.LogInformation("Matched {FileCount} files in {DirectoryPath}", 
-            fileJsonMap.Count, directoryPath);
+        _logger.ZLogInformation($"Matched {fileJsonMap.Count} files in {directoryPath}");
         return fileJsonMap;
     }
 
@@ -75,11 +73,10 @@ public class FileMetadataMetadataMatcher(ILogger<MetaDataApplier> logger) : IFil
         foreach (var jsonFile in metadataFiles)
         {
             int distance = MathUtils.CalcLevenshteinDistance(mediaFile, jsonFile);
-            if (distance < minDistance)
-            {
-                minDistance = distance;
-                closestMatch = jsonFile;
-            }
+            if (distance >= minDistance) continue;
+            
+            minDistance = distance;
+            closestMatch = jsonFile;
         }
 
         return closestMatch;

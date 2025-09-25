@@ -26,7 +26,6 @@ public class CustomFileLogger(string categoryName, StreamWriter logFileWriter) :
 
     public bool IsEnabled(LogLevel logLevel)
     {
-        // Ensure that only information level and higher logs are recorded
         return logLevel >= LogLevel.Information;
     }
 
@@ -34,20 +33,21 @@ public class CustomFileLogger(string categoryName, StreamWriter logFileWriter) :
         LogLevel logLevel,
         EventId eventId,
         TState state,
-        Exception exception,
+        Exception? exception,
         Func<TState, Exception, string> formatter)
     {
-        // Ensure that only information level and higher logs are recorded
         if (!IsEnabled(logLevel))
         {
             return;
         }
 
-        // Get the formatted log message
-        var message = formatter(state, exception);
+        if (exception != null)
+        {
+            var message = formatter(state, exception);
 
-        //Write log messages to text file
-        logFileWriter.WriteLine($"[{logLevel}] [{categoryName}] {message}");
+            logFileWriter.WriteLine($"[{logLevel}] [{categoryName}] {message}");
+        }
+
         logFileWriter.Flush();
     }
 }

@@ -2,6 +2,7 @@
 using TakeoutMerger.Core.Common.Utils;
 using TakeoutMerger.Core.Handlers.Directories;
 using TakeoutMerger.Core.Handlers.Files;
+using ZLogger;
 
 namespace TakeoutMerger.Core.Services;
 
@@ -21,27 +22,31 @@ public class TakeoutMergerService(ILogger<TakeoutMergerService> logger, IJsonNam
 
     public async Task StandardizeJsonNamesAsync(string inputFolder)
     {
-        _logger.LogInformation("Standardizing json names");
+        _logger.ZLogInformation($"Standardizing json names");
 
         await _jsonNameStandardizationHandler.HandleAsync(inputFolder);
 
-        _logger.LogInformation("Standardized json names");
+        _logger.ZLogInformation($"Standardized json names");
     }
 
     public async Task ApplyTakeoutMetadata(string inputFolder, string outputFolder)
     {
-        _logger.LogInformation("Applying take out metadata");
+        _logger.ZLogInformation($"Applying take out metadata");
 
         var allDirectories = Directory.GetDirectories(inputFolder, "*", SearchOption.AllDirectories);
 
+        int progress = 0;
+        int allDirCount = allDirectories.Length;
+        
         foreach (var directory in allDirectories)
         {
             await _directoryHandler.HandleAsync(directory, outputFolder);
+            _logger.ZLogInformation($"Tool progress: {progress/allDirCount * 100 }%");
         }
         
         await _directoryHandler.HandleAsync(inputFolder, outputFolder);
             
-        _logger.LogInformation("Applied take out metadata");
+        _logger.ZLogInformation($"Applied take out metadata");
     }
 
     public void EnsureWorkingDirectoryExists(string inputFolder, string outputFolder)

@@ -26,7 +26,7 @@ public static class PngToTiffConverter
     {
         var getBaseDir = Path.GetDirectoryName(pngFilePath);
         Bitmap bitmap = new Bitmap(pngFilePath);
-        ImageCodecInfo jgepEncoder = ImageUtils.GetEncoder(ImageFormat.Tiff);
+        ImageCodecInfo? jgepEncoder = ImageUtils.GetEncoder(ImageFormat.Tiff);
         Encoder myEncoder = Encoder.Quality;
         EncoderParameters myEncoderParameters = new EncoderParameters(1);
         var myEncoderParameter = new EncoderParameter(myEncoder, 100L);

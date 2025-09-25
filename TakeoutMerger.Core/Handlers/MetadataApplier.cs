@@ -7,6 +7,7 @@ using TakeoutMerger.Core.Common.Interfaces;
 using TakeoutMerger.Core.Common.Utils;
 using TakeoutMerger.Core.DTOs;
 using TakeoutMerger.Core.Tags;
+using ZLogger;
 
 namespace TakeoutMerger.Core.Handlers;
 
@@ -17,7 +18,7 @@ public interface IMetaDataApplier
     void ApplyJsonMetaDataToNonExifFile(string filePath, string jsonPath, string outputPath);
 }
 
-public class MetaDataApplier(ILogger<MetaDataApplier> logger) : IMetaDataApplier
+public class MetadataApplier(ILogger<MetadataApplier> logger) : IMetaDataApplier
 {
     private readonly ILogger _logger = logger;
 
@@ -126,11 +127,6 @@ public class MetaDataApplier(ILogger<MetaDataApplier> logger) : IMetaDataApplier
     {
         if (!File.Exists(filePath)) return;
 
-        var creationTime = GetDateTimeFromMetadata(
-            metadata.CreationTime,
-            metadata.PhotoTakenTime,
-            () => File.GetCreationTime(filePath));
-
         var photoTime = GetDateTimeFromMetadata(
             metadata.PhotoTakenTime,
             metadata.CreationTime,
@@ -138,13 +134,12 @@ public class MetaDataApplier(ILogger<MetaDataApplier> logger) : IMetaDataApplier
 
         File.SetCreationTime(filePath, photoTime);
         File.SetCreationTimeUtc(filePath, photoTime.ToUniversalTime());
-        File.SetLastWriteTime(filePath, creationTime);
-        File.SetLastWriteTimeUtc(filePath, creationTime.ToUniversalTime());
-        File.SetLastAccessTime(filePath, creationTime);
-        File.SetLastAccessTimeUtc(filePath, creationTime.ToUniversalTime());
+        File.SetLastWriteTime(filePath, photoTime);
+        File.SetLastWriteTimeUtc(filePath, photoTime.ToUniversalTime());
+        File.SetLastAccessTime(filePath, photoTime);
+        File.SetLastAccessTimeUtc(filePath, photoTime.ToUniversalTime());
 
-        _logger.LogInformation("File times updated - Creation: {Creation}, Modified: {Modified}",
-            photoTime, creationTime);
+        _logger.ZLogInformation($"File times updated - Creation: {photoTime}");
     }
 
     private DateTime GetDateTimeFromMetadata(ITimeData? primary, ITimeData? fallback, Func<DateTime> defaultValue)
@@ -199,7 +194,7 @@ public class MetaDataApplier(ILogger<MetaDataApplier> logger) : IMetaDataApplier
         {
             image.SetTitle(metadata.Title);
             hasChanges = true;
-            _logger.LogInformation("Title set: {Title} for {Image}", metadata.Title, imageIdentifier);
+            _logger.ZLogInformation($"Title set: {metadata.Title} for {imageIdentifier}");
         }
 
         if (string.IsNullOrWhiteSpace(image.GetMetaDataString(ExifTag.USER_COMMENT)) &&
@@ -207,8 +202,7 @@ public class MetaDataApplier(ILogger<MetaDataApplier> logger) : IMetaDataApplier
         {
             image.SetDescription(metadata.Description);
             hasChanges = true;
-            _logger.LogInformation("Description set: {Description} for {Image}",
-                metadata.Description, imageIdentifier);
+            _logger.ZLogInformation($"Description set: {metadata.Description} for {imageIdentifier}");
         }
 
         if (string.IsNullOrWhiteSpace(image.GetMetaDataString(ExifTag.ARTIST)))
@@ -216,12 +210,12 @@ public class MetaDataApplier(ILogger<MetaDataApplier> logger) : IMetaDataApplier
             var author = Environment.UserName;
             image.SetAuthor(author);
             hasChanges = true;
-            _logger.LogInformation("Author set: {Author} for {Image}", author, imageIdentifier);
+            _logger.ZLogInformation($"Author set: {author} for {imageIdentifier}");
         }
 
         if (!hasChanges)
         {
-            _logger.LogDebug("No descriptive metadata changes needed for {Image}", imageIdentifier);
+            _logger.ZLogDebug($"No descriptive metadata changes needed for {imageIdentifier}");
         }
     }
 
@@ -231,7 +225,7 @@ public class MetaDataApplier(ILogger<MetaDataApplier> logger) : IMetaDataApplier
 
         if (HasValidGeoData(image))
         {
-            _logger.LogInformation("Valid geo data already exists for {Image}", imageIdentifier);
+            _logger.ZLogInformation($"Valid geo data already exists for {imageIdentifier}");
             return;
         }
 
@@ -245,12 +239,11 @@ public class MetaDataApplier(ILogger<MetaDataApplier> logger) : IMetaDataApplier
         if (lat.HasValue && lon.HasValue && IsValidCoordinate(lat.Value, lon.Value))
         {
             image.SetGeoTags(lat.Value, lon.Value, alt);
-            _logger.LogInformation("Geo data applied - Lat: {Lat:F6}, Lon: {Lon:F6}, Alt: {Alt:F2}m for {Image}",
-                lat.Value, lon.Value, alt, imageIdentifier);
+            _logger.ZLogInformation($"Geo data applied - Lat: {lat.Value}, Lon: {lon.Value}, Alt: {alt}m for {imageIdentifier}");
         }
         else
         {
-            _logger.LogWarning("No valid geo coordinates in metadata for {Image}", imageIdentifier);
+            _logger.ZLogWarning($"No valid geo coordinates in metadata for {imageIdentifier}");
         }
     }
 

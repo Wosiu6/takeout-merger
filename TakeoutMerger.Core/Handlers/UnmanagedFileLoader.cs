@@ -2,7 +2,6 @@
 using Microsoft.Win32.SafeHandles;
 
 namespace TakeoutMerger.Core.Handlers;
-
 public class UnmanagedFileLoader
 {
     public const short FILE_ATTRIBUTE_NORMAL = 0x80;
@@ -21,7 +20,7 @@ public class UnmanagedFileLoader
         uint dwShareMode, nint lpSecurityAttributes, uint dwCreationDisposition,
         uint dwFlagsAndAttributes, nint hTemplateFile);
 
-    private SafeFileHandle handleValue = null;
+    private SafeFileHandle _handleValue;
 
     public UnmanagedFileLoader(string path)
         => Load(path);
@@ -32,12 +31,12 @@ public class UnmanagedFileLoader
             throw new ArgumentNullException(nameof(path));
 
         // Try to open the file.
-        handleValue = CreateFile(path, GENERIC_WRITE, 0, nint.Zero, OPEN_EXISTING, 0, nint.Zero);
+        _handleValue = CreateFile(path, GENERIC_WRITE, 0, nint.Zero, OPEN_EXISTING, 0, nint.Zero);
 
         // If the handle is invalid,
         // get the last Win32 error
         // and throw a Win32Exception.
-        if (handleValue.IsInvalid)
+        if (_handleValue.IsInvalid)
             Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
     }
 
@@ -45,8 +44,8 @@ public class UnmanagedFileLoader
     {
         get
         {
-            if (!handleValue.IsInvalid)
-                return handleValue;
+            if (!_handleValue.IsInvalid)
+                return _handleValue;
 
             return null;
         }

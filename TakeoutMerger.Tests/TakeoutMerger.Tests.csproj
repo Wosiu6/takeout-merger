@@ -25,4 +25,8 @@
     <ProjectReference Include="..\TakeoutMerger.Core\TakeoutMerger.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Handlers\" />
+  </ItemGroup>
+
 </Project>

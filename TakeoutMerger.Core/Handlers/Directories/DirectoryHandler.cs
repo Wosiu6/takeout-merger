@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using TakeoutMerger.Core.Common.Utils;
 using TakeoutMerger.Core.Handlers.Files;
+using ZLogger;
 
 namespace TakeoutMerger.Core.Handlers.Directories;
 
@@ -26,7 +27,7 @@ public class DirectoryHandler(
             throw new ArgumentException("Directory and output folder paths cannot be empty");
         }
 
-        _logger.LogInformation("Processing directory: {DirectoryPath}", directory);
+        _logger.ZLogInformation($"Processing directory: {directory}");
 
         var fileJsonPairs = _fileMetadataMatcher.GetFileDataMatches(directory);
 
@@ -35,7 +36,6 @@ public class DirectoryHandler(
             await Task.Run(async () => { await _fileHandler.HandleAsync(pair.Key, pair.Value, outputFolder); });
         }
 
-        _logger.LogInformation("Completed processing {FileCount} files in {DirectoryPath}",
-            fileJsonPairs.Count, directory);
+        _logger.ZLogInformation($"Completed processing {fileJsonPairs.Count} files in {directory}");
     }
 }
