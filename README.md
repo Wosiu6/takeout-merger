@@ -15,9 +15,11 @@ To run this you need to:
 - run the tool using `.\TakeoutMerger "C:\Workspace\Takeout\Testing" "C:\Workspace\Takeout\TestingOutput"` as an example
 
 ### Known Bugs
-- Datetime saved is sometimes confusing AM with PM Time
+- 
 
 ### To do
 - unit tests for public methods
 - options for different compressions/skipping png files (copying them as is with metadata loss) and/or adding and option to copy png files as is along their new tiff equivalents
 - replacing the  System.Drawing dependency with something cross platform (like ImageSharp) due to the usage of Windows GDI+ which is not cross platform
+- improve performance
+- improve json matching accuracy
