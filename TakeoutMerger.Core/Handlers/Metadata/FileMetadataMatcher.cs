@@ -1,10 +1,9 @@
 ﻿using System.Collections.Frozen;
 using Microsoft.Extensions.Logging;
 using TakeoutMerger.Core.Common.Utils;
-using TakeoutMerger.Core.Services;
 using ZLogger;
 
-namespace TakeoutMerger.Core.Handlers;
+namespace TakeoutMerger.Core.Handlers.Metadata;
 
 public interface IFileMetadataMatcher
 {

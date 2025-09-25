@@ -2,7 +2,7 @@
 using System.Drawing.Imaging;
 using TakeoutMerger.Core.Common.Utils;
 
-namespace TakeoutMerger.Core.Handlers;
+namespace TakeoutMerger.Core.Handlers.Files;
 
 #pragma warning disable CA1416
 

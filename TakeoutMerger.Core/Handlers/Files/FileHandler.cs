@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using TakeoutMerger.Core.Converters;
+using TakeoutMerger.Core.Handlers.Metadata;
 
 namespace TakeoutMerger.Core.Handlers.Files;
 
@@ -38,8 +39,6 @@ public class FileHandler(ILogger<FileHandler> logger, IPngToTiffConverter pngToT
         {
             _metaDataApplier.ApplyJsonMetaDataToNonExifFile(mediaFilePath, metadataFilePath, outputFolder);
         }
-        
-        File.Delete(mediaFilePath);
         
         await Task.CompletedTask;
     }

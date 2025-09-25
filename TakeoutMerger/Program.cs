@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using TakeoutMerger.Core.Handlers;
 using TakeoutMerger.Core.Handlers.Directories;
 using TakeoutMerger.Core.Handlers.Files;
+using TakeoutMerger.Core.Handlers.Metadata;
 using TakeoutMerger.Core.Services;
 using TakeoutMerger.Logging;
 using ZLogger;

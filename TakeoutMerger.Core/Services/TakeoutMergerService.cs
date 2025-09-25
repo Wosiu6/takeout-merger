@@ -13,7 +13,10 @@ public interface ITakeoutMergerService
     void EnsureWorkingDirectoryExists(string inputFolder, string outputFolder);
 }
 
-public class TakeoutMergerService(ILogger<TakeoutMergerService> logger, IJsonNameStandardizationHandler jsonNameStandardizationHandler, IDirectoryHandler  directoryHandler)
+public class TakeoutMergerService(
+    ILogger<TakeoutMergerService> logger,
+    IJsonNameStandardizationHandler jsonNameStandardizationHandler,
+    IDirectoryHandler directoryHandler)
     : ITakeoutMergerService
 {
     private readonly ILogger _logger = logger;
@@ -37,15 +40,19 @@ public class TakeoutMergerService(ILogger<TakeoutMergerService> logger, IJsonNam
 
         int progress = 0;
         int allDirCount = allDirectories.Length;
-        
+
         foreach (var directory in allDirectories)
         {
-            await _directoryHandler.HandleAsync(directory, outputFolder);
-            _logger.ZLogInformation($"Tool progress: {progress/allDirCount * 100 }%");
+            await Task.Run(async () =>
+            {
+                await _directoryHandler.HandleAsync(directory, outputFolder);
+                Interlocked.Increment(ref progress);
+                _logger.ZLogInformation($"Tool progress: {progress / allDirCount * 100}%");
+            });
         }
-        
+
         await _directoryHandler.HandleAsync(inputFolder, outputFolder);
-            
+
         _logger.ZLogInformation($"Applied take out metadata");
     }
 
