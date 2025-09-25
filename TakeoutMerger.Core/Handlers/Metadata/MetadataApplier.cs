@@ -9,7 +9,7 @@ using TakeoutMerger.Core.DTOs;
 using TakeoutMerger.Core.Tags;
 using ZLogger;
 
-namespace TakeoutMerger.Core.Handlers;
+namespace TakeoutMerger.Core.Handlers.Metadata;
 
 public interface IMetaDataApplier
 {

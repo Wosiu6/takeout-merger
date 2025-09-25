@@ -2,8 +2,6 @@
 
 using System.Drawing;
 using System.Drawing.Imaging;
-using Microsoft.Extensions.Logging;
-using TakeoutMerger.Core.Common.Logging;
 using TakeoutMerger.Core.Common.Utils;
 
 namespace TakeoutMerger.Core.Converters;

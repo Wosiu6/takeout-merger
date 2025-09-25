@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 
-namespace TakeoutMerger.Core.Handlers;
+namespace TakeoutMerger.Core;
 public class UnmanagedFileLoader
 {
     public const short FILE_ATTRIBUTE_NORMAL = 0x80;

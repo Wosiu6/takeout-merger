@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using TakeoutMerger.Core.Common.Utils;
 using TakeoutMerger.Core.Handlers.Files;
+using TakeoutMerger.Core.Handlers.Metadata;
 using ZLogger;
 
 namespace TakeoutMerger.Core.Handlers.Directories;
@@ -33,7 +34,7 @@ public class DirectoryHandler(
 
         foreach (var pair in fileJsonPairs)
         {
-            await Task.Run(async () => { await _fileHandler.HandleAsync(pair.Key, pair.Value, outputFolder); });
+            await _fileHandler.HandleAsync(pair.Key, pair.Value, outputFolder);
         }
 
         _logger.ZLogInformation($"Completed processing {fileJsonPairs.Count} files in {directory}");
