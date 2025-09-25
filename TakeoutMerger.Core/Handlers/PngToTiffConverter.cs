@@ -1,28 +1,31 @@
-﻿#pragma warning disable CA1416 // Validate platform compatibility, only Win 6.1+
-
-using System.Drawing;
+﻿using System.Drawing;
 using System.Drawing.Imaging;
-using Microsoft.Extensions.Logging;
-using TakeoutMerger.Core.Common.Logging;
 using TakeoutMerger.Core.Common.Utils;
 
-namespace TakeoutMerger.Core.Converters;
+namespace TakeoutMerger.Core.Handlers;
 
-public static class PngToTiffConverter
+#pragma warning disable CA1416
+
+public interface IPngToTiffConverter
 {
-    public static  string Convert(string pngFilePath, string outputPath, CompressionMode compression = CompressionMode.None)
+    public string Convert(string filePath, string outputFolder, CompressionMode compression = CompressionMode.None);
+}
+
+public class PngToTiffConverter : IPngToTiffConverter
+{
+    public string Convert(string pngFilePath, string outputPath, CompressionMode compression = CompressionMode.None)
     {
         return compression switch
         {
             CompressionMode.None => ConvertPngToTiff_Uncompressed(pngFilePath, outputPath),
-            CompressionMode.LZW => ConvertPngToTiff_LZW(pngFilePath, outputPath),
+            CompressionMode.Lzw => ConvertPngToTiff_LZW(pngFilePath, outputPath),
             CompressionMode.Zip => ConvertPngToTiff_Zip(pngFilePath, outputPath),
-            CompressionMode.None_Pat => ConvertPngToTiff_Uncompressed_Pat(pngFilePath, outputPath),
+            CompressionMode.NonePat => ConvertPngToTiff_Uncompressed_Pat(pngFilePath, outputPath),
             _ => throw new NotSupportedException("Unsupported compression mode")
         };
     }
 
-    public static string ConvertPngToTiff_Uncompressed_Pat(string pngFilePath, string outputPath)
+    private string ConvertPngToTiff_Uncompressed_Pat(string pngFilePath, string outputPath)
     {
         var getBaseDir = Path.GetDirectoryName(pngFilePath);
         Bitmap bitmap = new Bitmap(pngFilePath);
@@ -40,7 +43,7 @@ public static class PngToTiffConverter
         return newName;
     }
 
-    public static string ConvertPngToTiff_Uncompressed(string pngFilePath, string outputPath)
+    private string ConvertPngToTiff_Uncompressed(string pngFilePath, string outputPath)
     {
         using (var bitmap = new Bitmap(pngFilePath))
         {
@@ -59,7 +62,7 @@ public static class PngToTiffConverter
         }
     }
 
-    public static string ConvertPngToTiff_LZW(string pngFilePath, string outputPath)
+    private string ConvertPngToTiff_LZW(string pngFilePath, string outputPath)
     {
         using (var bitmap = new Bitmap(pngFilePath))
         {
@@ -78,7 +81,7 @@ public static class PngToTiffConverter
         }
     }
 
-    public static string ConvertPngToTiff_Zip(string pngFilePath, string outputPath)
+    private string ConvertPngToTiff_Zip(string pngFilePath, string outputPath)
     {
         using (var bitmap = new Bitmap(pngFilePath))
         {
@@ -103,9 +106,9 @@ public static class PngToTiffConverter
 public enum CompressionMode
 {
     None = 1,
-    LZW = 5,
+    Lzw = 5,
     Zip = 8,
-    None_Pat = 13
+    NonePat = 13
 }
 
 #pragma warning restore CA1416
