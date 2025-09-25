@@ -1,3 +1,5 @@
+This Project has been abandoned due to discovery of a much nicer project suited for my needs- [immich-go](https://github.com/simulot/immich-go). It should still work as is but is not going to be maintained anymore.
+
 ## Google Takeout Merge tool
 This is a tool that allows you to merge your exif data (GPS/ datetime created and so on) fomr Takeout .json files into your photos. It converts .pngs into .tiffs without compression so if you have a lot of .pngs you might want to switch to a compression algorithm (in code, there are methods ready, just didn't bother putting in options)
 JPG/JPEG and TIFF are being merged with their json files, and the rest of the usual takeout files, except for .json are being copied to the dest folder. It also flattens the structure to make it easier to upload.
