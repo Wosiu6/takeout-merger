@@ -26,7 +26,7 @@ app.ConfigureLogging(x =>
 {
     x.ClearProviders();
     x.SetMinimumLevel(LogLevel.Trace);
-    x.AddZLoggerConsole(options => { options.UseCustomPlainTextFormatter(); });
+    //x.AddZLoggerConsole(options => { options.UseCustomPlainTextFormatter(); });
     x.AddZLoggerFile((options, _) =>
     {
         options.UseCustomPlainTextFormatter();

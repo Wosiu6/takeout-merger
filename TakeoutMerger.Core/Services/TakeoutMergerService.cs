@@ -47,7 +47,7 @@ public class TakeoutMergerService(
             {
                 await _directoryHandler.HandleAsync(directory, outputFolder);
                 Interlocked.Increment(ref progress);
-                _logger.ZLogInformation($"Tool progress: {progress / allDirCount * 100}%");
+                Console.WriteLine($"Tool progress: {progress / allDirCount * 100}%"); // TEMPORARY DISPLAY
             });
         }
 
