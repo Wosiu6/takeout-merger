@@ -4,12 +4,13 @@ using TakeoutMerger.Core.Common.Utils;
 using TakeoutMerger.Core.Handlers.Files;
 using TakeoutMerger.Core.Handlers.Metadata;
 using ZLogger;
+using Spectre.Console;
 
 namespace TakeoutMerger.Core.Handlers.Directories;
 
 public interface IDirectoryHandler
 {
-    Task HandleAsync(string directory, string outputFolder);
+    Task HandleAsync(string directory, string outputFolder, ProgressTask progressTask);
 }
 
 public class DirectoryHandler(
@@ -21,7 +22,7 @@ public class DirectoryHandler(
     private readonly IFileHandler _fileHandler = fileHandler;
     private readonly ILogger _logger = logger;
 
-    public async Task HandleAsync(string directory, string outputFolder)
+    public async Task HandleAsync(string directory, string outputFolder, ProgressTask progressTask)
     {
         if (string.IsNullOrEmpty(directory) || string.IsNullOrEmpty(outputFolder))
         {
@@ -35,6 +36,7 @@ public class DirectoryHandler(
         foreach (var pair in fileJsonPairs)
         {
             await _fileHandler.HandleAsync(pair.Key, pair.Value, outputFolder);
+            progressTask.Increment(1);
         }
 
         _logger.ZLogInformation($"Completed processing {fileJsonPairs.Count} files in {directory}");
