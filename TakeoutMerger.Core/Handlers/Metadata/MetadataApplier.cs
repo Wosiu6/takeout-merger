@@ -61,7 +61,7 @@ public class MetadataApplier(ILogger<MetadataApplier> logger) : IMetaDataApplier
         var fileName = Path.GetFileNameWithoutExtension(sourcePath);
         var extension = Path.GetExtension(sourcePath);
         var newPath = Path.Combine(outputPath, $"{fileName}{extension}");
-        return FileUtils.GetUniqueFilePath(newPath);
+        return newPath;
     }
 
     private GoogleExifDataDto? LoadMetadata(string jsonPath)
@@ -94,10 +94,12 @@ public class MetadataApplier(ILogger<MetadataApplier> logger) : IMetaDataApplier
         ApplyDateTimeData(sourceImage, metadata, sourcePath);
 
         var encoder = GetEncoderForFile(destinationPath);
+        
         if (encoder != null)
         {
             var encoderParameters = new EncoderParameters(1);
             encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, 100L);
+            
             sourceImage.Save(destinationPath, encoder, encoderParameters);
         }
         else

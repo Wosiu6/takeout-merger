@@ -22,13 +22,15 @@ public class FileHandler(ILogger<FileHandler> logger, IPngToTiffConverter pngToT
     public async Task HandleAsync(string mediaFilePath, string metadataFilePath, string outputFolder)
     {
         var fileExtension = Path.GetExtension(mediaFilePath);
-        var fileFullName = Path.GetFileName(mediaFilePath);
-        var originalFilePath = mediaFilePath;
-
+        bool shouldDelete = false;
+        
         if (_bitmapConvertibleExtensions.Contains(fileExtension))
         {
-            mediaFilePath = _pngToTiffConverter.Convert(mediaFilePath, outputFolder);
+            _metaDataApplier.ApplyJsonMetaDataToNonExifFile(mediaFilePath, metadataFilePath, outputFolder);
+            
+            mediaFilePath = _pngToTiffConverter.Convert(mediaFilePath, Path.GetTempPath());
             fileExtension = Path.GetExtension(mediaFilePath);
+            shouldDelete = true;
         }
 
         if (_tagTypeExtensions.Contains(fileExtension))
@@ -38,6 +40,11 @@ public class FileHandler(ILogger<FileHandler> logger, IPngToTiffConverter pngToT
         else
         {
             _metaDataApplier.ApplyJsonMetaDataToNonExifFile(mediaFilePath, metadataFilePath, outputFolder);
+        }
+
+        if (shouldDelete)
+        {
+            File.Delete(mediaFilePath);
         }
         
         await Task.CompletedTask;
