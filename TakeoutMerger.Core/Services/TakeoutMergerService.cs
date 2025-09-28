@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Spectre.Console;
 using TakeoutMerger.Core.Common.Utils;
 using TakeoutMerger.Core.Handlers.Directories;
 using TakeoutMerger.Core.Handlers.Files;
@@ -37,21 +38,35 @@ public class TakeoutMergerService(
         _logger.ZLogInformation($"Applying take out metadata");
 
         var allDirectories = Directory.GetDirectories(inputFolder, "*", SearchOption.AllDirectories);
+        var allFiles = FileUtils.GetFilesExceptExtensions(inputFolder, [".json"], SearchOption.AllDirectories);
+        var totalItems = allFiles.Count();
 
-        int progress = 0;
-        int allDirCount = allDirectories.Length;
-
-        foreach (var directory in allDirectories)
-        {
-            await Task.Run(async () =>
+        await AnsiConsole
+            .Progress() // temporary progress bar, should be moved out and sorted out as a separate mechanism
+            .Columns(new ProgressColumn[]
             {
-                await _directoryHandler.HandleAsync(directory, outputFolder);
-                Interlocked.Increment(ref progress);
-                Console.WriteLine($"Tool progress: {progress / allDirCount * 100}%"); // TEMPORARY DISPLAY
-            });
-        }
+                new TaskDescriptionColumn(),
+                new ProgressBarColumn(),
+                new PercentageColumn(),
+                new RemainingTimeColumn()
+            })
+            .StartAsync(async ctx =>
+            {
+                var progressTask = ctx.AddTask($"Overall Takeout Processing done", new ProgressTaskSettings
+                {
+                    MaxValue = totalItems
+                });
 
-        await _directoryHandler.HandleAsync(inputFolder, outputFolder);
+                foreach (var directory in allDirectories)
+                {
+                    await Task.Run(async () =>
+                    {
+                        await _directoryHandler.HandleAsync(directory, outputFolder, progressTask);
+                    });
+                }
+
+                await _directoryHandler.HandleAsync(inputFolder, outputFolder, progressTask);
+            });
 
         _logger.ZLogInformation($"Applied take out metadata");
     }

@@ -10,7 +10,7 @@ namespace TakeoutMerger.Core.Handlers.Directories;
 
 public interface IDirectoryHandler
 {
-    Task HandleAsync(string directory, string outputFolder);
+    Task HandleAsync(string directory, string outputFolder, ProgressTask progressTask);
 }
 
 public class DirectoryHandler(
@@ -22,7 +22,7 @@ public class DirectoryHandler(
     private readonly IFileHandler _fileHandler = fileHandler;
     private readonly ILogger _logger = logger;
 
-    public async Task HandleAsync(string directory, string outputFolder)
+    public async Task HandleAsync(string directory, string outputFolder, ProgressTask progressTask)
     {
         if (string.IsNullOrEmpty(directory) || string.IsNullOrEmpty(outputFolder))
         {
@@ -33,27 +33,11 @@ public class DirectoryHandler(
 
         var fileJsonPairs = _fileMetadataMatcher.GetFileDataMatches(directory);
 
-        await AnsiConsole.Progress() // temporary progress bar, should be moved out and sorted out as a separate mechanism
-            .Columns(new ProgressColumn[] 
-            {
-                new TaskDescriptionColumn(),
-                new ProgressBarColumn(),
-                new PercentageColumn(),
-                new RemainingTimeColumn()
-            })
-            .StartAsync(async ctx =>
-            {
-                var progressTask = ctx.AddTask($"Processing {fileJsonPairs.Count} files in {outputFolder}", new ProgressTaskSettings
-                {
-                    MaxValue = fileJsonPairs.Count
-                });
-
-                foreach (var pair in fileJsonPairs)
-                {
-                    await _fileHandler.HandleAsync(pair.Key, pair.Value, outputFolder);
-                    progressTask.Increment(1);
-                }
-            });
+        foreach (var pair in fileJsonPairs)
+        {
+            await _fileHandler.HandleAsync(pair.Key, pair.Value, outputFolder);
+            progressTask.Increment(1);
+        }
 
         _logger.ZLogInformation($"Completed processing {fileJsonPairs.Count} files in {directory}");
     }
