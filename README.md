@@ -1,5 +1,6 @@
-## Google Takeout Merge tool
-This is a tool that allows you to merge your EXIF data (GPS/ datetime created, and so on) from Takeout .json files into your photos.
+Google Takeout Merge tool
+============
+[![Nuget][nuget-shield]][nuget-url] [![License][license-shield]][license-url] [![GitHub][github-shield]][github-url]
 
 How it works: 
 - The tool will rename all the .json files and remove all the `supplemental-metadata.json` bits from the name, doing so by matching the name with a few different matching algorithms.
@@ -13,3 +14,18 @@ This tool is handy if you are trying to upload files from one Google Photos acco
 To run this, you need to:
 - unzip Google Takeout into a folder
 - run the tool using `.\TakeoutMerger "C:\Workspace\Takeout\UnzippedTakeoutData" "C:\Workspace\Takeout\TakeoutOutput"` as an example
+
+[paypal-shield]: https://img.shields.io/static/v1?label=PayPal&message=Donate&style=flat-square&logo=paypal&color=blue
+[paypal-url]: https://www.paypal.com/donate/?hosted_button_id=MTY5DP7G8G6T4
+
+[coffee-shield]: https://img.shields.io/static/v1?label=BuyMeCoffee&message=Donate&style=flat-square&logo=buy-me-a-coffee&color=orange
+[coffee-url]: https://www.buymeacoffee.com/wosiu6
+
+[nuget-shield]: https://img.shields.io/nuget/v/ResxSorter?color=green&label=NuGet
+[nuget-url]: https://www.nuget.org/packages/ResxSorter
+
+[license-shield]: https://img.shields.io/badge/License-BSD%203--Clause-purple.svg
+[license-url]: https://opensource.org/licenses/BSD-3-Clause
+
+[github-shield]: https://img.shields.io/static/v1?label=&message=GitHub&style=flat-square&logo=github&color=grey
+[github-url]: https://github.com/Wosiu6/takeout-merger
