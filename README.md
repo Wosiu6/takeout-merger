@@ -1,6 +1,6 @@
 Google Takeout Merge tool
 ============
-[![Nuget][nuget-shield]][nuget-url] [![License][license-shield]][license-url] [![GitHub][github-shield]][github-url]
+[![License][license-shield]][license-url] [![GitHub][github-shield]][github-url]
 
 How it works: 
 - The tool will rename all the .json files and remove all the `supplemental-metadata.json` bits from the name, doing so by matching the name with a few different matching algorithms.
@@ -20,9 +20,6 @@ To run this, you need to:
 
 [coffee-shield]: https://img.shields.io/static/v1?label=BuyMeCoffee&message=Donate&style=flat-square&logo=buy-me-a-coffee&color=orange
 [coffee-url]: https://www.buymeacoffee.com/wosiu6
-
-[nuget-shield]: https://img.shields.io/nuget/v/ResxSorter?color=green&label=NuGet
-[nuget-url]: https://www.nuget.org/packages/ResxSorter
 
 [license-shield]: https://img.shields.io/badge/License-BSD%203--Clause-purple.svg
 [license-url]: https://opensource.org/licenses/BSD-3-Clause
